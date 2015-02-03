@@ -17,11 +17,11 @@ version :: Version
 version = Version {versionBranch = [0,1,0,0], versionTags = []}
 bindir, libdir, datadir, libexecdir, sysconfdir :: FilePath
 
-bindir     = "/Users/test/Desktop/Haskell1/.cabal-sandbox/bin"
-libdir     = "/Users/test/Desktop/Haskell1/.cabal-sandbox/lib/x86_64-osx-ghc-7.8.3/Haskell1-0.1.0.0"
-datadir    = "/Users/test/Desktop/Haskell1/.cabal-sandbox/share/x86_64-osx-ghc-7.8.3/Haskell1-0.1.0.0"
-libexecdir = "/Users/test/Desktop/Haskell1/.cabal-sandbox/libexec"
-sysconfdir = "/Users/test/Desktop/Haskell1/.cabal-sandbox/etc"
+bindir     = "/Users/test/Downloads/Haskell1/.cabal-sandbox/bin"
+libdir     = "/Users/test/Downloads/Haskell1/.cabal-sandbox/lib/x86_64-osx-ghc-7.8.3/Haskell1-0.1.0.0"
+datadir    = "/Users/test/Downloads/Haskell1/.cabal-sandbox/share/x86_64-osx-ghc-7.8.3/Haskell1-0.1.0.0"
+libexecdir = "/Users/test/Downloads/Haskell1/.cabal-sandbox/libexec"
+sysconfdir = "/Users/test/Downloads/Haskell1/.cabal-sandbox/etc"
 
 getBinDir, getLibDir, getDataDir, getLibexecDir, getSysconfDir :: IO FilePath
 getBinDir = catchIO (getEnv "Haskell1_bindir") (\_ -> return bindir)
