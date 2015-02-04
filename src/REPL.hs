@@ -26,6 +26,10 @@ dropVar n ((x,_):xs) | n == x = xs
 addHistory :: State -> Command -> State
 addHistory st cmd = st { history = cmd:history st }
 
+-- Get the most recent command from the history
+getCommand :: State -> Int -> Command
+getCommand st n = history st !! (n - 1)
+
 process :: State -> Command -> IO ()
 process st (Set var e) 
      = do let st' = undefined
