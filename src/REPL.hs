@@ -18,7 +18,9 @@ updateVars = undefined
 
 -- Return a new set of variables with the given name removed
 dropVar :: Name -> [(Name, Int)] -> [(Name, Int)]
-dropVar = undefined
+dropVar n [] = []
+dropVar n ((a,b):xs) | n == a = xs
+                     | otherwise = dropVar n xs
 
 -- Add a command to the command history in the state
 addHistory :: State -> Command -> State
