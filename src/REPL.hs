@@ -14,12 +14,12 @@ initState = State [] 0 []
 -- that name and value added.
 -- If it already exists, remove the old value
 updateVars :: Name -> Int -> [(Name, Int)] -> [(Name, Int)]
-updateVars = undefined
+updateVars n v xs = (n,v):dropVar n xs
 
 -- Return a new set of variables with the given name removed
 dropVar :: Name -> [(Name, Int)] -> [(Name, Int)]
 dropVar n [] = []
-dropVar n ((a,b):xs) | n == a = xs
+dropVar n ((x,_):xs) | n == x = xs
                      | otherwise = dropVar n xs
 
 -- Add a command to the command history in the state
