@@ -45,5 +45,6 @@ repl st = do putStr (show (numCalcs st) ++ " > ")
              case parse pCommand inp of
                   [(cmd, "")] -> -- Must parse entire input
                           process st cmd
-                  _ -> do putStrLn "Parse error"
-                          repl st
+                  _ -> if inp == ":q" then putStrLn "Bye" else 
+                          do putStrLn "Parse error"
+                             repl st
