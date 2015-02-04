@@ -22,7 +22,7 @@ dropVar = undefined
 
 -- Add a command to the command history in the state
 addHistory :: State -> Command -> State
-addHistory = undefined
+addHistory st cmd = st { history = cmd:history st }
 
 process :: State -> Command -> IO ()
 process st (Set var e) 
@@ -45,6 +45,6 @@ repl st = do putStr (show (numCalcs st) ++ " > ")
              case parse pCommand inp of
                   [(cmd, "")] -> -- Must parse entire input
                           process st cmd
-                  _ -> if inp == ":q" then putStrLn "Bye" else 
+                  _ -> if inp == ":q" then putStrLn "Bye" else -- Quit command
                           do putStrLn "Parse error"
                              repl st
