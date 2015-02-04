@@ -8,7 +8,10 @@ data State = State { vars :: [(Name, Int)],
                      history :: [Command] }
 
 initState :: State
+it :: Int -- Implicitly stores the result of the last operation
+
 initState = State [] 0 []
+it = 0
 
 -- Given a variable name and a value, return a new set of variables with
 -- that name and value added.
@@ -51,8 +54,9 @@ repl st = do putStr (show (numCalcs st) ++ " > ")
              case parse pCommand inp of
                   [(cmd, "")] -> -- Must parse entire input
                          process st cmd
-                  _ -> if inp == ":q"  then putStrLn "Bye" else -- Quit command
-                       if '!' `elem` inp then putStrLn (show (getCommand st n)) 
+                  _ -> if inp == ":q" then putStrLn "Bye" else -- Quit command
+                       if '!' `elem` inp then putStrLn $ show $ getCommand st n else -- Get the most recent command
+                       if inp == "it" then putStrLn $ show it
                        else do putStrLn "Parse error"
                                repl st
-                       where n = read (drop 1 inp) :: Int
+                       where n = read $ drop 1 inp :: Int
