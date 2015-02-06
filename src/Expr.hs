@@ -29,12 +29,9 @@ eval vars (Sub x y) = Just (fromJust (eval vars x) - fromJust (eval vars y))
 eval vars (Mul x y) = Just (fromJust (eval vars x) * fromJust (eval vars y))
 eval vars (Div x y) = Just (fromJust (eval vars x) `div` fromJust (eval vars y))
 
-digitToInt :: Char -> Int
-digitToInt x = fromEnum x - fromEnum '0'
-
 pCommand :: Parser Command
 pCommand = do t <- letter
-              char '='
+              symbol "="
               e <- pExpr
               return (Set [t] e)
             ||| do e <- pExpr
@@ -42,30 +39,30 @@ pCommand = do t <- letter
 
 pExpr :: Parser Expr
 pExpr = do t <- pTerm
-           do char '+'
+           do symbol "+"
               e <- pExpr
               return (Add t e)
-            ||| do char '-'
+            ||| do symbol "-"
                    e <- pExpr
                    return (Sub t e) 
                  ||| return t
 
 pFactor :: Parser Expr
-pFactor = do d <- digit
-             return (Val (digitToInt d))
+pFactor = do d <- natural
+             return (Val d)
            ||| do v <- letter
                   error "Variables not yet implemented" 
-                ||| do char '('
+                ||| do symbol "("
                        e <- pExpr
-                       char ')'
+                       symbol ")"
                        return e
 
 pTerm :: Parser Expr
 pTerm = do f <- pFactor
-           do char '*'
+           do symbol "*"
               t <- pTerm
               return (Mul f t)
-            ||| do char '/'
+            ||| do symbol "/"
                    t <- pTerm
                    return (Div f t)
                  ||| return f
