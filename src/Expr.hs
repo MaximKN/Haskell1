@@ -1,9 +1,9 @@
 module Expr where
 
 import Parsing
-import Data.Maybe
 
-type Name = String
+type Ident = String
+type Name  = String
 
 -- At first, 'Expr' contains only addition and values. You will need to 
 -- add other operations, and variables
@@ -12,6 +12,7 @@ data Expr = Add Expr Expr
           | Mul Expr Expr
           | Div Expr Expr
           | Val Int
+          | Ident Ident
   deriving Show
 
 -- These are the REPL commands - set a variable name to a value, and evaluate
@@ -23,11 +24,23 @@ data Command = Set Name Expr
 eval :: [(Name, Int)] -> -- Variable name to value mapping
         Expr -> -- Expression to evaluate
         Maybe Int -- Result (if no errors such as missing variables)
-eval vars (Val x) = Just x -- for values, just give the value directly
-eval vars (Add x y) = Just (fromJust (eval vars x) + fromJust (eval vars y))
-eval vars (Sub x y) = Just (fromJust (eval vars x) - fromJust (eval vars y))
-eval vars (Mul x y) = Just (fromJust (eval vars x) * fromJust (eval vars y))
-eval vars (Div x y) = Just (fromJust (eval vars x) `div` fromJust (eval vars y))
+
+eval vars (Val x)   = Just x -- for values, just give the value directly
+eval vars (Add x y) = val (+)   vars x y
+eval vars (Sub x y) = val (-)   vars x y
+eval vars (Mul x y) = val (*)   vars x y
+eval vars (Div x y) = val (div) vars x y
+eval vars (Ident x) = Just (getIdent x vars)
+
+val op vars x y = do x <- eval vars x
+                     y <- eval vars y
+                     return (op x y)
+
+-- Get value from the state by name
+getIdent :: Name -> [(Name, Int)] -> Int
+getIdent _ [] = 0
+getIdent n ((x,y):xs) | n == x = y
+                      | otherwise = getIdent n xs
 
 pCommand :: Parser Command
 pCommand = do t <- letter
@@ -51,7 +64,7 @@ pFactor :: Parser Expr
 pFactor = do d <- natural
              return (Val d)
            ||| do v <- letter
-                  error "Variables not yet implemented" 
+                  return (Ident [v])
                 ||| do symbol "("
                        e <- pExpr
                        symbol ")"

@@ -44,7 +44,7 @@ process :: State -> Command -> IO ()
 process st (Set var e) 
      = do let val = getValue var (vars st) -- Current value for the given variable 
               -- update the state by storing the variable and adding command to the history
-              st' x = updateState (addHistory st (Set var e)) var x  
+              st' x = updateState ((addHistory st (Set var e)) {numCalcs = numCalcs st + 1}) var x  
               in case eval [(var, val)] e of
                   Just x -> do putStrLn "OK"
                                repl $ st' x
@@ -52,8 +52,10 @@ process st (Set var e)
           -- st' should include the variable set to the result of evaluating e
 process st (Eval e) 
      = do let st' = (addHistory st (Eval e)) {numCalcs = numCalcs st + 1}
-          putStrLn ( show $ fromJust (eval (vars st') e)) -- Print the result of evaluation
-          repl st'
+              in case eval (vars st') e of
+                Just x -> do putStrLn ( show $ x)
+                             repl st'
+                Nothing -> putStrLn "Error parsing expression"
 
 updateState :: State -> Name -> Int -> State
 updateState st n v = st { vars = updateVars n v (vars st) }
@@ -70,7 +72,7 @@ repl st = do putStr (show (numCalcs st) ++ " > ")
                   [(cmd, "")] -> -- Must parse entire input
                          process st cmd
                   _ -> if inp == ":q" then putStrLn "Bye" else -- Quit command
-                       if '!' `elem` inp then putStrLn $ show $ getCommand st n else -- Get the most recent command
+                       if '!' `elem` inp then process st (getCommand st n) else -- Get the most recent comma
                        if inp == "it" then putStrLn $ show it -- Show recent variable
                        else do putStrLn "Parse error"
                                repl st
