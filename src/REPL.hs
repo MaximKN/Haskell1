@@ -2,6 +2,7 @@ module REPL where
 
 import Expr
 import Parsing
+import Data.Maybe
 
 data State = State { vars :: [(Name, Int)],
                      numCalcs :: Int,
@@ -50,8 +51,9 @@ process st (Set var e)
                   Nothing -> putStrLn "val - previous v / Add result of evaluating e to the history"
           -- st' should include the variable set to the result of evaluating e
 process st (Eval e) 
-     = do let st' = undefined
-          -- Print the result of evaluation
+     = do let st' = st {numCalcs = numCalcs st + 1}
+              -- ADD COMMAND TO HISTORY
+          putStrLn (show $ fromJust (eval (vars st') e)) -- Print the result of evaluation
           repl st'
 
 updateState :: State -> Name -> Int -> State

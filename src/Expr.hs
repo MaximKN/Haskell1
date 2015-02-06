@@ -1,12 +1,16 @@
 module Expr where
 
 import Parsing
+import Data.Maybe
 
 type Name = String
 
 -- At first, 'Expr' contains only addition and values. You will need to 
 -- add other operations, and variables
 data Expr = Add Expr Expr
+          | Sub Expr Expr
+          | Mul Expr Expr
+          | Div Expr Expr
           | Val Int
   deriving Show
 
@@ -20,7 +24,10 @@ eval :: [(Name, Int)] -> -- Variable name to value mapping
         Expr -> -- Expression to evaluate
         Maybe Int -- Result (if no errors such as missing variables)
 eval vars (Val x) = Just x -- for values, just give the value directly
-eval vars (Add x y) = Nothing -- return an error (because it's not implemented yet!)
+eval vars (Add x y) = Just (fromJust (eval vars x) + fromJust (eval vars y))
+eval vars (Sub x y) = Just (fromJust (eval vars x) - fromJust (eval vars y))
+eval vars (Mul x y) = Just (fromJust (eval vars x) * fromJust (eval vars y))
+eval vars (Div x y) = Just (fromJust (eval vars x) `div` fromJust (eval vars y))
 
 digitToInt :: Char -> Int
 digitToInt x = fromEnum x - fromEnum '0'
@@ -40,7 +47,7 @@ pExpr = do t <- pTerm
               return (Add t e)
             ||| do char '-'
                    e <- pExpr
-                   error "Subtraction not yet implemented!" 
+                   return (Sub t e) 
                  ||| return t
 
 pFactor :: Parser Expr
@@ -57,8 +64,8 @@ pTerm :: Parser Expr
 pTerm = do f <- pFactor
            do char '*'
               t <- pTerm
-              error "Multiplication not yet implemented" 
+              return (Mul f t)
             ||| do char '/'
                    t <- pTerm
-                   error "Division not yet implemented" 
+                   return (Div f t)
                  ||| return f
