@@ -34,19 +34,16 @@ getCommand :: State -> Int -> Command
 getCommand st n = history st !! n
 
 -- Get value from the state by name
-getValue :: State -> Name -> Int
-getValue st n = getValue1 n $ vars st
-
--- Sub-function for a getValue that gets a value by name in a list
-getValue1 :: Name -> [(Name, Int)] -> Int
-getValue1 _ [] = 0
-getValue1 n ((x,y):xs) | n == x = y
-                       | otherwise = getValue1 n xs
+getValue :: Name -> [(Name, Int)] -> Int
+getValue _ [] = 0
+getValue n ((x,y):xs) | n == x = y
+                      | otherwise = getValue n xs
 
 process :: State -> Command -> IO ()
 process st (Set var e) 
-     = do let val = getValue st var
-              st' x = updateState (addHistory st (Set var e)) var x
+     = do let val = getValue var (vars st) -- Current value for the given variable 
+              -- update the state by storing the variable and adding command to the history
+              st' x = updateState (addHistory st (Set var e)) var x  
               in case eval [(var, val)] e of
                   Just x -> do putStrLn "OK"
                                repl $ st' x
