@@ -6,13 +6,10 @@ import Data.Maybe
 
 data State = State { vars :: [(Name, Int)],
                      numCalcs :: Int,
-                     history :: [Command] }
+                     history :: [Command]}
 
 initState :: State
-it :: Int -- Implicitly stores the result of the last operation
-
 initState = State [] 0 []
-it = 0
 
 -- Given a variable name and a value, return a new set of variables with
 -- that name and value added.
@@ -48,14 +45,16 @@ process st (Set var e)
               in case eval [(var, val)] e of
                   Just x -> do putStrLn "OK"
                                repl $ st' x
-                  Nothing -> putStrLn "val - previous v / Add result of evaluating e to the history"
+                  Nothing -> putStrLn "Error setting variable"
           -- st' should include the variable set to the result of evaluating e
 process st (Eval e) 
-     = do let st' = (addHistory st (Eval e)) {numCalcs = numCalcs st + 1}
-              in case eval (vars st') e of
-                Just x -> do putStrLn ( show $ x)
+     = do let ev  = (eval (vars st) e)
+          let st' = updateState ((addHistory st (Eval e)) {numCalcs = numCalcs st + 1}) "it" (fromJust ev)
+              in case ev of
+                Just x -> do putStrLn (show $ x) -- ADD ABILITY TO SHOW ERRORS
                              repl st'
-                Nothing -> putStrLn "Error parsing expression"
+                Nothing -> do putStrLn "Error parsing expression"
+                              repl st'
 
 updateState :: State -> Name -> Int -> State
 updateState st n v = st { vars = updateVars n v (vars st) }
@@ -73,7 +72,6 @@ repl st = do putStr (show (numCalcs st) ++ " > ")
                          process st cmd
                   _ -> if inp == ":q" then putStrLn "Bye" else -- Quit command
                        if '!' `elem` inp then process st (getCommand st n) else -- Get the most recent comma
-                       if inp == "it" then putStrLn $ show it -- Show recent variable
-                       else do putStrLn "Parse error"
-                               repl st
+                       do putStrLn "Parse error"
+                          repl st
                        where n = read $ drop 1 inp :: Int
