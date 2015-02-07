@@ -31,6 +31,7 @@ eval vars (Name x) = case getIdent x vars of
                         Just a  -> return a
                         Nothing -> Nothing
 
+--EDIT
 --val :: (a -> b -> c) -> [(Name, Int)] -> Expr -> Expr -> IO (Int)
 val op vars x y = do x <- eval vars x
                      y <- eval vars y
