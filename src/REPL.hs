@@ -20,8 +20,8 @@ updateVars n v xs = (n,v):dropVar n xs
 -- Return a new set of variables with the given name removed
 dropVar :: Name -> [(Name, Int)] -> [(Name, Int)]
 dropVar _ [] = []
-dropVar n ((x,_):xs) | n == x = xs
-                     | otherwise = dropVar n xs
+dropVar n ((x,y):xs) | n == x = xs
+                     | otherwise = (x,y):dropVar n xs
 
 -- Add a command to the command history in the state
 addHistory :: State -> Command -> State
@@ -43,17 +43,18 @@ process st (Set var e)
               -- update the state by storing the variable and adding command to the history
               st' x = updateState ((addHistory st (Set var e)) {numCalcs = numCalcs st + 1}) var x  
               in case eval [(var, val)] e of
-                  Just x -> do putStrLn "OK"
+                  Just x -> do putStrLn $ "OK"
                                repl $ st' x
-                  Nothing -> putStrLn "Error setting variable"
+                  Nothing -> do putStrLn "Error setting a variable"
+                                repl $ st
           -- st' should include the variable set to the result of evaluating e
 process st (Eval e) 
      = do let ev  = (eval (vars st) e)
           let st' = updateState ((addHistory st (Eval e)) {numCalcs = numCalcs st + 1}) "it" (fromJust ev)
               in case ev of
-                Just x -> do putStrLn (show $ x) -- ADD ABILITY TO SHOW ERRORS
+                Just x -> do putStrLn $ show $ x -- ADD ABILITY TO SHOW ERRORS
                              repl st'
-                Nothing -> do putStrLn "Error parsing expression"
+                Nothing -> do putStrLn "Error parsing an expression"
                               repl st'
 
 updateState :: State -> Name -> Int -> State
