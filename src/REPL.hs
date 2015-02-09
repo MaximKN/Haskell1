@@ -8,14 +8,14 @@ data State = State { vars :: Tree (Name, Int),
                      numCalcs :: Int,
                      history :: [Command]}
 
-data (Ord a) => Tree a = Empty 
-                       | Node a (Tree a) (Tree a) 
+data Tree a = Empty 
+            | Node a (Tree a) (Tree a) 
   deriving Show  
 
 initState :: State
 initState = State Empty 0 []
 
-updateTreeVars :: Name -> Int -> Tree (Name, Int) -> Tree (Name, Int)
+updateTreeVars :: (Ord a, Ord b) => a -> b -> Tree (a, b) -> Tree (a, b)
 updateTreeVars n v Empty = Node (n,v) Empty Empty
 updateTreeVars n v (Node (x,y) t1 t2) | n < x = Node (x,y) (updateTreeVars n v t1) t2
                                       | n > x = Node (x,y) t1 (updateTreeVars n v t2)
@@ -53,7 +53,7 @@ getValueFromTree n (Node (z,q) t1 t2) | n < z = getValueFromTree n t1
                                       | n > z = getValueFromTree n t2
                                       | otherwise = q
 
-flatTree :: Tree (Name, Int) -> [(Name, Int)]
+flatTree :: (Ord a, Ord b) => Tree (a, b) -> [(a, b)]
 flatTree Empty = []
 flatTree (Node x t1 t2) = flatTree t1 ++ [x] ++ flatTree t2
 
@@ -66,7 +66,7 @@ process st (Set var e)
               in case eval [(var, val)] e of
                   Just x -> do putStrLn $ "OK"
                                repl $ st' x
-                  Nothing -> do putStrLn "Error setting a variable"
+                  Nothing -> do putStrLn "Creating new variable"
                                 repl $ st
           -- st' should include the variable set to the result of evaluating e
 process st (Eval e) 
