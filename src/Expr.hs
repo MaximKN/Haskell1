@@ -3,6 +3,7 @@ module Expr where
 import Parsing
 
 type Name = String
+type Msg  = String
 
 data Expr = Add Expr Expr
           | Sub Expr Expr
@@ -10,6 +11,7 @@ data Expr = Add Expr Expr
           | Div Expr Expr
           | Val Int
           | Name Name
+          | Err Msg
   deriving Show
 
 -- These are the REPL commands - set a variable name to a value, and evaluate
@@ -21,15 +23,18 @@ data Command = Set Name Expr
 eval :: [(Name, Int)] -> -- Variable name to value mapping
         Expr -> -- Expression to evaluate
         Maybe Int -- Result (if no errors such as missing variables)
+-- Either String Int
 
-eval vars (Val x)   = Just x -- for values, just give the value directly
+eval _    (Val x)   = Just x -- for values, just give the value directly
 eval vars (Add x y) = val (+)   vars x y
 eval vars (Sub x y) = val (-)   vars x y
 eval vars (Mul x y) = val (*)   vars x y
 eval vars (Div x y) = val (div) vars x y
-eval vars (Name x) = case getIdent x vars of
-                        Just a  -> return a
-                        Nothing -> Nothing
+--eval _    (Err msg) = Left msg
+eval vars (Name x)  = case getIdent x vars of
+                        Just a  -> Just a
+                        Nothing -> Nothing --Left "Variable undefined"
+eval _ _ = Nothing -- catch errors
 
 --EDIT
 --val :: (a -> b -> a) -> [(Name, Int)] -> Expr -> Expr -> IO (Int)
@@ -70,6 +75,8 @@ pFactor = do d <- integer
                        e <- pExpr
                        symbol ")"
                        return e
+                     ||| do err <- pErr
+                            return err
 
 pTerm :: Parser Expr
 pTerm = do f <- pFactor
@@ -80,3 +87,8 @@ pTerm = do f <- pFactor
                    t <- pTerm
                    return (Div f t)
                  ||| return f
+
+pErr :: Parser Expr
+pErr = do s <- letter
+          return (Err "Internal error")
+        ||| return (Err "Unrecognized characters")
