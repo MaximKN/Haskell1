@@ -22,22 +22,20 @@ data Command = Set Name Expr
 
 eval :: [(Name, Int)] -> -- Variable name to value mapping
         Expr -> -- Expression to evaluate
-        Maybe Int -- Result (if no errors such as missing variables)
--- Either String Int
+        Either String Int -- Result (if no errors such as missing variables)
 
-eval _    (Val x)   = Just x -- for values, just give the value directly
+eval _    (Val x)   = Right x -- for values, just give the value directly
 eval vars (Add x y) = val (+)   vars x y
 eval vars (Sub x y) = val (-)   vars x y
 eval vars (Mul x y) = val (*)   vars x y
 eval vars (Div x y) = val (div) vars x y
---eval _    (Err msg) = Left msg
+eval _    (Err msg) = Left msg
 eval vars (Name x)  = case getIdent x vars of
-                        Just a  -> Just a
-                        Nothing -> Nothing --Left "Variable undefined"
-eval _ _ = Nothing -- catch errors
+                        Just a  -> Right a
+                        Nothing -> Left "Use of undeclared variable"
+eval _ _ = Left "Couldn't evaluate expression" -- catch errors
 
---EDIT
---val :: (a -> b -> a) -> [(Name, Int)] -> Expr -> Expr -> IO (Int)
+val :: (Int -> Int -> Int) -> [(Name, Int)] -> Expr -> Expr -> Either String Int
 val op vars x y = do x <- eval vars x
                      y <- eval vars y
                      return (op x y)
@@ -75,8 +73,7 @@ pFactor = do d <- integer
                        e <- pExpr
                        symbol ")"
                        return e
-                     ||| do err <- pErr
-                            return err
+                     ||| return (Err ("Could not parse expression"))
 
 pTerm :: Parser Expr
 pTerm = do f <- pFactor
@@ -87,8 +84,3 @@ pTerm = do f <- pFactor
                    t <- pTerm
                    return (Div f t)
                  ||| return f
-
-pErr :: Parser Expr
-pErr = do s <- letter
-          return (Err "Internal error")
-        ||| return (Err "Unrecognized characters")

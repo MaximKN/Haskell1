@@ -3,10 +3,7 @@ module REPL where
 import Expr
 import Parsing
 import Helper
-import System.IO
 import Data.List
-import Data.Maybe
-import Data.String
 
 data State = State { vars     :: Tree (Name, Int),
                      numCalcs :: Int,
@@ -66,10 +63,6 @@ flatTree (Node x t1 t2) = flatTree t1 ++ [x] ++ flatTree t2
 updateState :: State -> Name -> Int -> State
 updateState st n v = st { vars = updateTreeVars n v (vars st) }
 
--- Print to the error stream (stderr)
-printErr :: String -> IO ()
-printErr err = hPutStrLn stderr err
-
 -- Add commands to the commands list in the state
 addCommands :: State -> [String] -> State
 addCommands st cmds = st { commands = (cmds ++ (commands st)) }
@@ -82,19 +75,22 @@ hasCommands st = length (commands st) /= 0
 removeCommand :: State -> State
 removeCommand st = case commands st of
                       [] -> st
-                      x:xs -> st { commands = xs }
+                      _:xs -> st { commands = xs }
+
+-- Handles the errors of loading a file
+load :: [String] -> State -> IO ()
+load cmd st = do case (length cmd /= 2) of
+                    True -> do putStrLn "Usage: :l <filename>"
+                               repl st
+                    False -> do contents <- loadFile (cmd !! 1)
+                                let st' = addCommands st (wordsWhen (=='\n') contents) in
+                                  repl st'
 
 -- Execute a program command
 exec :: [String] -> State -> IO ()
 exec cmd st = case head cmd of
                 ":q" -> putStrLn "Bye"
-                ":l" -> do case (length cmd /= 2) of
-                            True -> do putStrLn "Usage: :l <filename>"
-                                       repl st
-                            False -> case cmd !! 1 of
-                                  filename -> do contents <- loadFile filename
-                                                 let st' = addCommands st (wordsWhen (=='\n') contents) in
-                                                     repl st'
+                ":l" -> load cmd st
                 _   -> do putStrLn $ "\"" ++ head cmd ++ "\" not recognized command"
                           repl st
 
@@ -111,19 +107,18 @@ process st (Set var e)
               --REFACTOR
               st' x = updateState ((addHistory st (Set var e)) {numCalcs = numCalcs st + 1}) var x  
               in case eval [(var, val)] e of
-                  Just a -> repl $ st' a
-                  Nothing -> do printErr "Use of undeclared variable" --Left err -> do printErr err
-                                repl $ st
+                  Right a -> repl $ st' a
+                  Left err -> do printErr err
+                                 repl $ st
           -- st' should include the variable set to the result of evaluating e
 process st (Eval e) 
      = do let ev  = eval (flatTree (vars st)) e
-     -- REFACTOR
-          let st' = updateState ((addHistory st (Eval e)) {numCalcs = numCalcs st + 1}) "it" (fromJust ev)
+          let st' = updateState ((addHistory st (Eval e)) {numCalcs = numCalcs st + 1}) "it" (fromRight ev)
               in case ev of
-                Just x  -> do putStrLn $ show $ x --Right x  -> do putStrLn $ show $ x
-                              repl st'
-                Nothing -> do putStrLn "Error parsing expression" --Left err -> do printErr err
-                              repl st
+                Right x  -> do putStrLn $ show $ x
+                               repl st'
+                Left err -> do putStrLn err
+                               repl st
 
 -- Read, Eval, Print Loop
 -- This reads and parses the input using the pCommand parser, and calls
@@ -133,7 +128,7 @@ process st (Eval e)
 repl :: State -> IO ()
 repl st = do putStr (show (numCalcs st) ++ " > ")
              inp <- readLine st
-             let st' = removeCommand st in 
+             let st' = removeCommand st in -- remove command from list if file was used
                case parse pCommand inp of
                   [(cmd, "")] -> process st' cmd -- Must parse entire input
                   _ -> if (isPrefixOf ":" inp) && (length inp >= 2) then exec (words inp) st' -- Execute program command (e.g. :q - quit)
