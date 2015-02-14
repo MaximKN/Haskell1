@@ -1,3 +1,5 @@
+{- LANGUAGE DatatypeContexts -}
+
 module REPL where
 
 import Expr
@@ -64,8 +66,8 @@ exec cmd st = case head cmd of
 
 readLine :: State -> IO String
 readLine st | hasCommands st  = let cmd = (commands st) !! 0 in
-                                  do putStrLn $ cmd
-                                     return cmd
+                                    do putStrLn $ cmd
+                                       return cmd
             | otherwise       = getLine
 
 process :: State -> Command -> IO ()
@@ -80,6 +82,17 @@ process st (Set var e)
                   Left err -> do printErr err
                                  repl $ st
           -- st' should include the variable set to the result of evaluating e
+process st (Print i s)
+     = do if i == "echo" then putStrLn $ show $ s
+          else putStrLn $ "Unrecognized print command"
+          repl $ st
+
+process st (Loop i n e)
+     = do if i == "loop" then do let st' = addCommands st [fromRight(eval $ (vars st) show e)] in
+                                     repl $ st'
+          else putStrLn $ "Unrecognized loop command"
+          --repl $ st
+
 process st (Eval e) 
      = do let ev  = eval (vars st) e
           let st' = updateState ((addHistory st (Eval e)) {numCalcs = numCalcs st + 1}) "it" (fromRight ev)
