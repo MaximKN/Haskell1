@@ -79,6 +79,12 @@ letter                        =  sat isAlpha
 alphanum                      :: Parser Char
 alphanum                      =  sat isAlphaNum
 
+character 					  :: Parser Char
+character					  = sat isCharacter
+
+isCharacter					  :: Char -> Bool
+isCharacter	c				  = True
+
 char                          :: Char -> Parser Char
 char x                        =  sat (== x)
 
@@ -102,10 +108,10 @@ ident                         =  do x  <- lower
                                     return (x:xs)
 
 alphanumString                :: Parser String
-alphanumString                =  do x  <- alphanum
-                                    xs <- many alphanum
-                                    return (x:xs)                               
-
+alphanumString                =  do x  <- character
+                                    xs <- many character
+                                    return (x:xs)                              
+									
 nat                           :: Parser Int
 nat                           =  do xs <- many1 digit
                                     return (read xs)
@@ -139,9 +145,10 @@ token p                       =  do space
                                     space
                                     return v
 
+									{-
 echoString                    :: Parser String
-echoString                    =  token alphanumString 
-
+echoString                    =  do s <- token character 
+-}
 identifier                    :: Parser String
 identifier                    =  token ident
 

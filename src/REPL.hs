@@ -5,7 +5,7 @@ module REPL where
 import Expr
 import Parsing
 import Helper
-import Data.List
+import Data.List 
 
 data State = State { vars     :: Tree (Name, Float),
                      numCalcs :: Int,
@@ -26,12 +26,12 @@ addHistory :: State -> Command -> State
 addHistory st cmd = st { history = cmd:history st }
 
 -- Get the most recent command from the history
-getCommand :: State -> Int -> Command
-getCommand st n = history st !! n
+getHistory :: State -> Int -> Command
+getHistory st n = history st !! n
 
 -- Update variable key-value pairs list
-updateState :: State -> Name -> Float -> State
-updateState st n v = st { vars = updateTreeVars n v (vars st) }
+addVar :: State -> Name -> Float -> State
+addVar st n v = st { vars = updateTreeVars n v (vars st) }
 
 -- Add commands to the commands list in the state
 addCommands :: State -> [String] -> State
@@ -46,7 +46,7 @@ removeCommand :: State -> State
 removeCommand st = case commands st of
                       [] -> st
                       _:xs -> st { commands = xs }
-
+					  
 -- Handles the errors of loading a file
 load :: [String] -> State -> IO ()
 load cmd st = do case (length cmd /= 2) of
@@ -61,8 +61,8 @@ exec :: [String] -> State -> IO ()
 exec cmd st = case head cmd of
                 ":q" -> putStrLn "Bye"
                 ":l" -> load cmd st
-                _   -> do putStrLn $ "\"" ++ head cmd ++ "\" not recognized command"
-                          repl st
+                _    -> do putStrLn $ "\"" ++ head cmd ++ "\" not recognized command"
+                           repl st
 
 readLine :: State -> IO String
 readLine st | hasCommands st  = let cmd = (commands st) !! 0 in
@@ -72,30 +72,17 @@ readLine st | hasCommands st  = let cmd = (commands st) !! 0 in
 
 process :: State -> Command -> IO ()
 process st (Set var e) 
-     = do let val = getValueFromTree var (vars st) -- Current value for the given variable 
-              -- update the state by storing the variable and adding command to the history
-              --REFACTOR
-              st' x = updateState (addHistory st (Set var e)) var x  
+     = do let st' x = addVar (addHistory st (Set var e)) var x  
               in case eval (vars st) e of
                   Right a  -> do putStrLn "OK!"
                                  repl $ st' a
                   Left err -> do printErr err
                                  repl $ st
           -- st' should include the variable set to the result of evaluating e
-process st (Print i s)
-     = do if i == "echo" then putStrLn $ show $ s
-          else putStrLn $ "Unrecognized print command"
-          repl $ st
-
-process st (Loop i n e)
-     = do if i == "loop" then do let st' = addCommands st [fromRight(eval $ (vars st) show e)] in
-                                     repl $ st'
-          else putStrLn $ "Unrecognized loop command"
-          --repl $ st
 
 process st (Eval e) 
      = do let ev  = eval (vars st) e
-          let st' = updateState ((addHistory st (Eval e)) {numCalcs = numCalcs st + 1}) "it" (fromRight ev)
+          let st' = addVar ((addHistory st (Eval e)) {numCalcs = numCalcs st + 1}) "it" (fromRight ev)
               in case ev of
                 Right x  -> do case isInt x of
                                 True -> putStrLn $ show $ truncate x
@@ -104,6 +91,18 @@ process st (Eval e)
                 Left err -> do putStrLn err
                                repl st
 
+process st (Print i s)
+     = do if i == "echo" then putStrLn $ show $ s
+          else putStrLn $ "Unrecognized print command"
+          repl $ st
+
+process st (Loop i n e)
+     = do if i == "loop" then do let st' = addCommands st (replicate n e) in
+                                     repl $ st'
+          else do putStrLn $ "Usage: loop <n-times> <expression>"
+                  repl $ st
+							   
+							   
 -- Read, Eval, Print Loop
 -- This reads and parses the input using the pCommand parser, and calls
 -- 'process' to process the command.
@@ -116,7 +115,7 @@ repl st = do putStr (show (numCalcs st) ++ " > ")
                case parse pCommand inp of
                   [(cmd, "")] -> process st' cmd -- Must parse entire input
                   _ -> if (isPrefixOf ":" inp) && (length inp >= 2) then exec (words inp) st' -- Execute program command (e.g. :q - quit)
-                            else if '!' `elem` inp then process st' (getCommand st' n) -- Get the most recent command from history
+                            else if '!' `elem` inp then process st' (getHistory st' n) -- Get the most recent command from history
                                 else do printErr $ "Could not parse \"" ++ inp ++ "\""
                                         repl st'
                             where n = read $ drop 1 inp :: Int

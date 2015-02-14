@@ -43,7 +43,7 @@ fromRight (Left _)  = error "Either.Unwrap.fromRight: Argument takes form 'Left 
 fromRight (Right x) = x
 
 
------------------------ USED FUNCTIONS ------------------------
+----------------------- UNUSED FUNCTIONS ------------------------
 
 -- Get value from list of vars
 getIdent :: Name -> [(Name, Int)] -> Maybe Int

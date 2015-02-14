@@ -20,7 +20,7 @@ data Expr = Add Expr Expr
 data Command = Set Name Expr
              | Eval Expr
              | Print Name Name
-             | Loop Name Int Expr
+             | Loop Name Int String
   deriving Show
 
 eval :: Tree (Name, Float) -> -- Variable name to value mapping
@@ -59,11 +59,11 @@ pCommand = do l <- letter
               return (Set [l] e)
             ||| do i <- identifier
                    symbol "$"
-                   s <- echoString
+                   s <- alphanumString
                    return (Print i s)
                 ||| do i <- identifier
                        n <- natural
-                       e <- pExpr
+                       e <- alphanumString
                        return (Loop i n e)
                     ||| do e <- pExpr
                            return (Eval e)
