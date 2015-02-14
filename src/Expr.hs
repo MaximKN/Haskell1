@@ -3,15 +3,13 @@ module Expr where
 import Parsing
 import Helper
 
-type Msg  = String
-
 data Expr = Add Expr Expr
           | Sub Expr Expr
           | Mul Expr Expr
           | Div Expr Expr
-          | Val Int
+          | Val Float
           | Name Name
-          | Err Msg
+          | Err String
   deriving Show
 
 -- These are the REPL commands - set a variable name to a value, and evaluate
@@ -20,22 +18,23 @@ data Command = Set Name Expr
              | Eval Expr
   deriving Show
 
-eval :: Tree (Name, Int) -> -- Variable name to value mapping
-        Expr -> -- Expression to evaluate
-        Either String Int -- Result (if no errors such as missing variables)
+eval :: Tree (Name, Float) -> -- Variable name to value mapping
+       Expr -> -- Expression to evaluate
+        Either String Float -- Result (if no errors such as missing variables)
 
-eval _    (Val x)   = Right x -- for values, just give the value directly
+eval _    (Val x)   | isInt x   = Right (toInt x)
+                    | otherwise = Right x
 eval vars (Add x y) = val (+)   vars x y
 eval vars (Sub x y) = val (-)   vars x y
 eval vars (Mul x y) = val (*)   vars x y
-eval vars (Div x y) = val (div) vars x y
+eval vars (Div x y) = val (/) vars x y
 eval _    (Err msg) = Left msg
 eval vars (Name x)  = case getValueFromTree x vars of
                         Just a  -> Right a
                         Nothing -> Left "Use of undeclared variable"
 eval _ _ = Left "Couldn't evaluate expression" -- catch errors
 
-val :: (Int -> Int -> Int) -> Tree (Name, Int) -> Expr -> Expr -> Either String Int
+val :: (Float -> Float -> Float) -> Tree (Name, Float) -> Expr -> Expr -> Either String Float
 val op vars x y = do x <- eval vars x
                      y <- eval vars y
                      return (op x y)
@@ -59,7 +58,7 @@ pExpr = do t <- pTerm
                  ||| return t
 
 pFactor :: Parser Expr
-pFactor = do d <- integer
+pFactor = do d <- float
              return (Val d)
            ||| do v <- identifier
                   return (Name v)

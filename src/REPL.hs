@@ -5,7 +5,7 @@ import Parsing
 import Helper
 import Data.List
 
-data State = State { vars     :: Tree (Name, Int),
+data State = State { vars     :: Tree (Name, Float),
                      numCalcs :: Int,
                      history  :: [Command],
                      commands :: [String] }
@@ -13,7 +13,7 @@ data State = State { vars     :: Tree (Name, Int),
 initState :: State
 initState = State Empty 0 [] []
 
-updateTreeVars :: Name -> Int -> Tree (Name, Int) -> Tree (Name, Int)
+updateTreeVars :: Name -> Float -> Tree (Name, Float) -> Tree (Name, Float)
 updateTreeVars n v Empty = Node (n,v) Empty Empty
 updateTreeVars n v (Node (x,y) t1 t2) | n < x = Node (x,y) (updateTreeVars n v t1) t2
                                       | n > x = Node (x,y) t1 (updateTreeVars n v t2)
@@ -28,7 +28,7 @@ getCommand :: State -> Int -> Command
 getCommand st n = history st !! n
 
 -- Update variable key-value pairs list
-updateState :: State -> Name -> Int -> State
+updateState :: State -> Name -> Float -> State
 updateState st n v = st { vars = updateTreeVars n v (vars st) }
 
 -- Add commands to the commands list in the state
@@ -75,7 +75,8 @@ process st (Set var e)
               --REFACTOR
               st' x = updateState (addHistory st (Set var e)) var x  
               in case eval (vars st) e of
-                  Right a  -> repl $ st' a
+                  Right a  -> do putStrLn "OK!"
+                                 repl $ st' a
                   Left err -> do printErr err
                                  repl $ st
           -- st' should include the variable set to the result of evaluating e
@@ -83,7 +84,9 @@ process st (Eval e)
      = do let ev  = eval (vars st) e
           let st' = updateState ((addHistory st (Eval e)) {numCalcs = numCalcs st + 1}) "it" (fromRight ev)
               in case ev of
-                Right x  -> do putStrLn $ show $ x
+                Right x  -> do case isInt x of
+                                True -> putStrLn $ show $ truncate x
+                                False -> putStrLn $ show $ x
                                repl st'
                 Left err -> do putStrLn err
                                repl st

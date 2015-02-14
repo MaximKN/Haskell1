@@ -9,15 +9,15 @@ data Tree a = Empty
             | Node a (Tree a) (Tree a) 
   deriving Show
 
-getValueFromTree :: Name -> Tree (Name, Int) -> Maybe Int
+getValueFromTree :: Name -> Tree (Name, Float) -> Maybe Float
 getValueFromTree _ Empty = Nothing
 getValueFromTree n (Node (z,q) t1 t2) | n < z = getValueFromTree n t1
                                       | n > z = getValueFromTree n t2
                                       | otherwise = Just q
 
 
-
-
+-- check if a floating point number can be converted into an int
+isInt x = x == fromInteger (round x)
 
 -- Similar to function word, except it takes a predicate
 -- Src: http://stackoverflow.com/a/4981265/2849447
