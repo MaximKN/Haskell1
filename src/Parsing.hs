@@ -101,6 +101,11 @@ ident                         =  do x  <- lower
                                     xs <- many alphanum
                                     return (x:xs)
 
+alphanumString                :: Parser String
+alphanumString                =  do x  <- alphanum
+                                    xs <- many alphanum
+                                    return (x:xs)                               
+
 nat                           :: Parser Int
 nat                           =  do xs <- many1 digit
                                     return (read xs)
@@ -133,6 +138,9 @@ token p                       =  do space
                                     v <- p
                                     space
                                     return v
+
+echoString                    :: Parser String
+echoString                    =  token alphanumString 
 
 identifier                    :: Parser String
 identifier                    =  token ident

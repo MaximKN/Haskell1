@@ -16,6 +16,8 @@ data Expr = Add Expr Expr
 -- an expression
 data Command = Set Name Expr
              | Eval Expr
+             | Print Name Name
+             | Loop Name Int Expr
   deriving Show
 
 eval :: Tree (Name, Float) -> -- Variable name to value mapping
@@ -40,12 +42,20 @@ val op vars x y = do x <- eval vars x
                      return (op x y)
 
 pCommand :: Parser Command
-pCommand = do t <- letter
+pCommand = do l <- letter
               symbol "="
               e <- pExpr
-              return (Set [t] e)
-            ||| do e <- pExpr
-                   return (Eval e)
+              return (Set [l] e)
+            ||| do i <- identifier
+                   symbol "$"
+                   s <- echoString
+                   return (Print i s)
+                ||| do i <- identifier
+                       n <- natural
+                       e <- pExpr
+                       return (Loop i n e)
+                    ||| do e <- pExpr
+                           return (Eval e)
 
 pExpr :: Parser Expr
 pExpr = do t <- pTerm
