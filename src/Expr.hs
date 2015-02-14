@@ -1,8 +1,8 @@
 module Expr where
 
 import Parsing
+import Helper
 
-type Name = String
 type Msg  = String
 
 data Expr = Add Expr Expr
@@ -20,7 +20,7 @@ data Command = Set Name Expr
              | Eval Expr
   deriving Show
 
-eval :: [(Name, Int)] -> -- Variable name to value mapping
+eval :: Tree (Name, Int) -> -- Variable name to value mapping
         Expr -> -- Expression to evaluate
         Either String Int -- Result (if no errors such as missing variables)
 
@@ -30,21 +30,15 @@ eval vars (Sub x y) = val (-)   vars x y
 eval vars (Mul x y) = val (*)   vars x y
 eval vars (Div x y) = val (div) vars x y
 eval _    (Err msg) = Left msg
-eval vars (Name x)  = case getIdent x vars of
+eval vars (Name x)  = case getValueFromTree x vars of
                         Just a  -> Right a
                         Nothing -> Left "Use of undeclared variable"
 eval _ _ = Left "Couldn't evaluate expression" -- catch errors
 
-val :: (Int -> Int -> Int) -> [(Name, Int)] -> Expr -> Expr -> Either String Int
+val :: (Int -> Int -> Int) -> Tree (Name, Int) -> Expr -> Expr -> Either String Int
 val op vars x y = do x <- eval vars x
                      y <- eval vars y
                      return (op x y)
-
--- Get value from the state by name
-getIdent :: Name -> [(Name, Int)] -> Maybe Int
-getIdent _ [] = Nothing
-getIdent n ((x,y):xs) | n == x = Just y
-                      | otherwise = getIdent n xs
 
 pCommand :: Parser Command
 pCommand = do t <- letter
