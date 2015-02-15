@@ -69,9 +69,8 @@ pCommand = do l <- letter -- ^ Variable assignment
               e <- pExpr
               return (Set [l] e)
             ||| do string "print" -- ^ Print statement
-                   symbol "\""
+                   space
                    s <- anything
-                   symbol "\""
                    return (Print s)
                 ||| do string "loop"  -- ^ Loop construct
                        n <- natural

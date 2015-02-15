@@ -109,9 +109,8 @@ process st (Simplify e)
                                             repl st'-}
                                             
 -- | Take a string and print it to the console
-process st (Print s)
-     = do putStrLn $ s
-	      --repl st
+process st (Print s) = do putStrLn $ s
+                          repl $ st
 
 -- | Evaluate an expression n times
 process st (Loop n e)
@@ -125,7 +124,7 @@ process st (FunctionInit n e)
 process st (FunctionCall f)
      = do let val = getValueFromTree f (funcs st)
               st' = addCommands st (fromJust $ val) in
-              repl st'    
+              repl st'
 
 -- | Read, Eval, Print Loop
 -- ^ This reads and parses the input using the pCommand parser, and calls
