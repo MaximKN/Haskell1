@@ -3,6 +3,7 @@ module Helper where
 import System.IO
 
 ----------------------- BINARY TREES ------------------------
+-- | 
 type Name = String
 
 data Tree a = Empty 
@@ -77,5 +78,5 @@ flatTree (Node x t1 t2) = flatTree t1 ++ [x] ++ flatTree t2
 
 
 -- Update variable key-value pairs list
-addVar :: State -> a -> b -> State
-addVar st n v = st { vars = updateTreeVars n v (vars st) }
+--addVar :: State -> a -> b -> State
+--addVar st n v = st { vars = updateTreeVars n v (vars st) }
