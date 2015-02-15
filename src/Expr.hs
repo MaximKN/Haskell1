@@ -3,6 +3,7 @@ module Expr where
 import Parsing
 import Helper
 
+<<<<<<< Updated upstream
 data Expr = Add Expr Expr
           | Sub Expr Expr
           | Mul Expr Expr
@@ -39,6 +40,51 @@ eval vars (Div x y) = val (/) vars x y
 eval _    (Err msg) = Left msg
 eval vars (Abs n) = Right (abs (fromRight (eval vars n)))
 eval vars (Power x y) = Right ((fromRight (eval vars x)) ** (fromRight (eval vars y)))
+=======
+-- | These are Expressions used in Command
+data Expr = Add Expr Expr   -- ^ Addition
+          | Sub Expr Expr   -- ^ Subtration
+          | Mul Expr Expr   -- ^ Multiplication
+          | Div Expr Expr   -- ^ Division
+          | Val Float       -- ^ Single number
+          | Name Name       -- ^ Single identifier
+          | Err String      -- ^ Error message
+		      | Abs Expr        -- ^ Ablosute value
+          | Mod Expr Expr   -- ^ Modulo
+          | Power Expr Expr -- ^ Power
+  deriving Show
+
+-- | These are the REPL commands 
+data Command = Set Name Expr                -- ^ Setting expression to the variable
+             | Eval Expr                    -- ^ Expression evaluation
+             | Print Name Name              -- ^ Printing the expression
+             | Loop Name Int Name           -- ^ Looping, the number of times and expression as a string
+             | FunctionInit Name Name Name  -- ^ Initialize the function, function name, expression as a string 
+             | FunctionCall Name            -- ^ Calling function
+  deriving Show
+
+-- | Evaluation function evaluates a given expression and produces the result 
+eval :: Tree (Name, Float) -> -- ^ Variable name to value mapping
+        Expr ->               -- ^ Expression to evaluate
+        Either String Float   -- ^ Result 
+eval _    (Val x)   = Right x          -- ^ Single number
+eval vars (Add x y) = val (+) vars x y -- ^ Addition
+eval vars (Sub x y) = val (-) vars x y -- ^ Subtraction
+eval vars (Mul x y) = val (*) vars x y -- ^ Multiplication
+eval vars (Div x y) = val (/) vars x y -- ^ Division
+eval _    (Err msg) = Left msg         -- ^ Error message
+eval vars (Name x)  = 
+  case getValueFromTree x vars of                         -- ^ if a name is in the tree
+    Just a  -> Right a                                    -- ^ single variable
+    Nothing -> Left "Use of undeclared variable"          -- ^ error message
+eval vars (Abs n) = Right (abs (fromRight (eval vars n))) -- ^ absolute value
+eval vars (Mod x y) = 
+  case isInt (fromRight (eval vars x)) && isInt (fromRight (eval vars y)) of            -- ^ checks that both number are the integers
+		True -> Right $ fromIntegral $ (toInteger $ round $ fromRight $ eval vars x)        -- ^ converts float to the int fro the first value
+            `mod` (toInteger $ round $ fromRight $ eval vars y)                         -- ^ converts float to the int fro the second value
+		False -> Left "Can't mod floats"                                                    -- ^ error message				
+eval vars (Power x y) = Right ((fromRight (eval vars x)) ** (fromRight (eval vars y)))  -- ^ raises one value to the power of another value
+>>>>>>> Stashed changes
 
 eval vars (Mod x y)
     = case isInt (fromRight (eval vars x)) && isInt (fromRight (eval vars y)) of
