@@ -1,2 +1,7 @@
 1 + 1
 2 + 2
+<<<<<<< HEAD
+=======
+function main (): +1
+main()
+>>>>>>> 7869c3dc7ac34db5e3e78ae10fdbade31c6ca5b8

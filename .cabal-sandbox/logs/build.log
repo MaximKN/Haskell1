@@ -1,0 +1,13 @@
+
+package: haskeline-0.7.1.3
+os: osx
+arch: x86_64
+compiler: ghc-7.8.3
+client: cabal-install-1.18.0.5
+flags: terminfo -libiconv -legacy-encoding
+dependencies: unix-2.7.0.1 transformers-0.3.0.0 terminfo-0.4.0.0
+              filepath-1.3.0.2 directory-1.2.1.0 containers-0.5.5.1
+              bytestring-0.10.4.0 base-4.7.0.1
+install-outcome: InstallOk
+docs-outcome: Ok
+tests-outcome: NotTried

@@ -20,8 +20,10 @@ data Expr = Add Expr Expr
 data Command = Set Name Expr
              | Eval Expr
              | Print Name Name
-             | Loop Name Int String
 	     | Simp Name Expr
+             | Loop Name Int Name
+             | FunctionInit Name Name Name
+             | FunctionCall Name
   deriving Show
 
 eval :: Tree (Name, Float) -> -- Variable name to value mapping
@@ -64,12 +66,20 @@ pCommand = do l <- letter
                        n <- natural
                        e <- alphanumString
                        return (Loop i n e)
-                    ||| do symbol ":" 
-			   i <- identifier
-			   e <- pExpr
-			   return (Simp i e)
-			 ||| do e <- pExpr
-                                return (Eval e)
+                     ||| do symbol ":"
+                            i <- identifier
+                            e <- pExpr
+                            return (Simp i e)
+                          ||| do f <- identifier --"function"
+                                 n <- identifier -- function name 
+                                 symbol "():" -- add list of arguments
+                                 e <- alphanumString
+                                 return (FunctionInit f n e)
+                               ||| do n <- identifier -- function name 
+                                      symbol "()" -- add list of arguments
+                                      return (FunctionCall n)
+                                   ||| do e <- pExpr
+                                          return (Eval e)
 
 pExpr :: Parser Expr
 pExpr = do t <- pTerm

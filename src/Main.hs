@@ -1,8 +1,6 @@
 module Main where
 
 import System.IO
-import Parsing
-import Expr
 import REPL
 
 main :: IO ()
