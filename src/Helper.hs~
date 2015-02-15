@@ -74,8 +74,3 @@ dropVar n ((x,y):xs) | n == x = xs
 flatTree :: (Ord a, Ord b) => Tree (a, b) -> [(a, b)]
 flatTree Empty = []
 flatTree (Node x t1 t2) = flatTree t1 ++ [x] ++ flatTree t2
-
-
--- Update variable key-value pairs list
-addVar :: State -> a -> b -> State
-addVar st n v = st { vars = updateTreeVars n v (vars st) }

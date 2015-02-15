@@ -32,9 +32,9 @@ eval :: Tree (Name, Float) -> -- Variable name to value mapping
         Either String Float -- Result (if no errors such as missing variables)
 
 eval _    (Val x)   = Right x
-eval vars (Add x y) = val (+) vars x y
-eval vars (Sub x y) = val (-) vars x y
-eval vars (Mul x y) = val (*) vars x y
+eval vars (Add x y) = val (+)   vars x y
+eval vars (Sub x y) = val (-)   vars x y
+eval vars (Mul x y) = val (*)   vars x y
 eval vars (Div x y) = val (/) vars x y
 eval _    (Err msg) = Left msg
 eval vars (Abs n) = Right (abs (fromRight (eval vars n)))

@@ -107,7 +107,7 @@ ident                         =  do x  <- lower
                                     xs <- many alphanum
                                     return (x:xs)
 
--- | Accepts any characters from the input stream
+-- | Parsers input frp
 anything                :: Parser String
 anything                =  do x  <- character
                               xs <- many character
