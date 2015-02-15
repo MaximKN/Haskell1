@@ -11,7 +11,7 @@ simp (Add x y) = if areFloats (Add x y) then
 		 		 else case eval (Empty) x of
 						Left s -> Left "x"
 						Right v -> case eval (Empty) y of
-										Left ss -> Left $ (show v) ++ "+" ++ "x"
+										Left ss  -> Left $ (show v) ++ "+" ++ "x"
 										Right vv -> Left $ (show v) ++ "+" ++ (show vv) 
 
 			-- try and evaluate the left and right side as much as possible

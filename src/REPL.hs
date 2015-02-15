@@ -30,9 +30,11 @@ addHistory :: State -> Command -> State
 addHistory st cmd = st { history = cmd:history st }
 
 -- | Get the most recent command from the history
-getHistory :: State -> Int -> Command
-getHistory st n = history st !! n
-
+getHistory :: State -> Int -> Either String Command
+getHistory st n | n < 0                      = Left "Index less than zero! Please provide a positive index into the history."
+                | n >= (length $ history st) = Left "Index too big! Please provide an appropriate index into the history."
+                | otherwise                  = Right $ history st !! n
+                
 -- | Add commands to the list of commands to be executed
 addCommands :: State -> [String] -> State
 addCommands st cmds = st { commands = (cmds ++ (commands st)) }
@@ -49,7 +51,7 @@ removeCommand st = case commands st of
 					  
 -- | Handles the errors of loading a file
 load :: [String] -> State -> IO ()
-load cmd st = do case (length cmd /= 2) of
+load cmd st = case (length cmd /= 2) of
                     True -> do putStrLn "Usage: :l <filename>"
                                repl st
                     False -> do contents <- loadFile (cmd !! 1)
@@ -67,8 +69,8 @@ exec cmd st = case head cmd of
 -- | Get next command in the list of commands in state, otherwise read command from console
 readLine :: State -> IO String
 readLine st | hasCommands st  = let cmd = (commands st) !! 0 in
-                                    do putStrLn $ cmd
-                                       return cmd
+                                    do putStrLn cmd
+                                       return   cmd
             | otherwise       = getLine
 
 -- | Set a variable and update the state
@@ -87,42 +89,37 @@ process st (Eval e)
           let st' = st { vars = updateTreeVars "it" (fromRight ev) (vars ((addHistory st (Eval e)) {numCalcs = numCalcs st + 1}))} 
               in case ev of
                 Right x  -> do case isInt x of
-                                True -> putStrLn $ show $ truncate x
-                                False -> putStrLn $ show $ x
+                                   True -> putStrLn $ show $ truncate x
+                                   False -> putStrLn $ show $ x
                                repl st'
                 Left err -> do putStrLn err
                                repl st
 
 -- | Take an expression and simplify it
-process st (Simp i e)
-	= do if i == "simplify" then
-		do case simplify e of 
+process st (Simplify e)
+    = repl $ st
+{-process st (Simp i e)
+	= do case simplify e of 
 		     Left e -> do putStrLn $ show $ e
-                                  repl $ st
-		     Right f -> do case isInt f of
-					True -> putStrLn $ show $ truncate f
-					False -> putStrLn $ show $ f
-				   repl $ st
-	      else repl $ st
-
+		                  repl $ st
+             Right f -> case isInt f of
+                                True -> do putStrLn $ show $ truncate f
+                                           repl st'
+                                False -> do putStrLn $ show $ f
+                                            repl st'-}
+                                            
 -- | Take a string and print it to the console
-process st (Print i s)
-     = do if i == "echo" then
-	     do putStrLn $ show $ s
-	        repl $ st
-           else repl $ st
+process st (Print s)
+     = do putStrLn $ s
+	      --repl st
 
 -- | Evaluate an expression n times
-process st (Loop i n e)
-     = do if i == "loop" then do let st' = addCommands st (replicate n e) in
-                                     repl $ st'
-          else repl $ st
+process st (Loop n e)
+     = repl $ addCommands st (replicate n e)
 
 -- | Define and store a function
-process st (FunctionInit f n e)
-     = do let st' = st { funcs = updateTreeVars n [e] (funcs st)}
-          if f == "function" then repl $ st'                       
-          else repl $ st
+process st (FunctionInit n e)
+     = repl $ st { funcs = updateTreeVars n [e] (funcs st)}
 
 -- Add functions expressions to list of commands to get executed
 process st (FunctionCall f)
@@ -141,7 +138,7 @@ repl st = do putStr (show (numCalcs st) ++ " > ")
                case parse pCommand inp of
                   [(cmd, "")] -> process st' cmd -- ^ Must parse entire input
                   _ -> if (isPrefixOf ":" inp) && (length inp >= 2) then exec (words inp) st' -- ^ Execute program command (e.g. :q - quit)
-                            else if '!' `elem` inp then process st' (getHistory st' n) -- ^ Get the most recent command from history
+                            else if '!' `elem` inp then process st' (fromRight (getHistory st' n)) -- ^ Get the most recent command from history
                                 else do printErr $ "Could not parse \"" ++ inp ++ "\""
                                         repl st'
                             where n = read $ drop 1 inp :: Int

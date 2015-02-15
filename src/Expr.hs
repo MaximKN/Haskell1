@@ -19,11 +19,11 @@ data Expr = Add Expr Expr   -- ^ Addition
 -- | These are the REPL commands
 data Command = Set Name Expr                -- ^ Setting expression to the variable
              | Eval Expr                    -- ^ Expression evaluation
-             | Print Name Name              -- ^ Printing the expression
-             | Loop Name Int Name           -- ^ Looping, the number of times and expression as a string
-             | FunctionInit Name Name Name  -- ^ Initialize the function, function name, expression as a string 
+             | Print String                 -- ^ Printing the expression
+             | Loop Int String              -- ^ Looping, the number of times and expression as a string
+             | FunctionInit Name String     -- ^ Initialize the function, function name, expression as a string 
              | FunctionCall Name            -- ^ Calling function
-             | Simp Name Expr
+             | Simplify Expr
   deriving Show
 
 -- | Evaluation function evaluates a given expression and produces the result 
@@ -68,23 +68,24 @@ pCommand = do l <- letter -- ^ Variable assignment
               symbol "="
               e <- pExpr
               return (Set [l] e)
-            ||| do i <- identifier -- ^ Print statement
-                   symbol "$"
+            ||| do string "print" -- ^ Print statement
+                   symbol "\""
                    s <- anything
-                   return (Print i s)
-                ||| do i <- identifier  -- ^ Loop construct
+                   symbol "\""
+                   return (Print s)
+                ||| do string "loop"  -- ^ Loop construct
                        n <- natural
                        e <- anything
-                       return (Loop i n e)
+                       return (Loop n e)
                      ||| do symbol ":"  -- ^ Simplify function
-                            i <- identifier
+                            string "simplify"
                             e <- pExpr
-                            return (Simp i e)
-                          ||| do f <- identifier -- ^ Function declaration
+                            return (Simplify e)
+                          ||| do string "function" -- ^ Function declaration
                                  n <- identifier -- ^ Function identifier 
                                  symbol "():"
                                  e <- anything
-                                 return (FunctionInit f n e)
+                                 return (FunctionInit n e)
                                ||| do n <- identifier -- ^ Function call
                                       symbol "()"
                                       return (FunctionCall n)
