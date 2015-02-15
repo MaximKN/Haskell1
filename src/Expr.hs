@@ -11,7 +11,7 @@ data Expr = Add Expr Expr   -- ^ Addition
           | Val Float       -- ^ Single number
           | Name Name       -- ^ Single identifier
           | Err String      -- ^ Error message
-		  | Abs Expr        -- ^ Ablosute value
+		      | Abs Expr        -- ^ Ablosute value
           | Mod Expr Expr   -- ^ Modulo
           | Power Expr Expr -- ^ Power
   deriving Show

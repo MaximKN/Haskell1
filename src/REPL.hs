@@ -71,20 +71,25 @@ readLine st | hasCommands st  = let cmd = (commands st) !! 0 in
                                        return cmd
             | otherwise       = getLine
 
+
+-- | Adds Name and Float to the tree
+updateState :: Name -> Float -> State -> State
+updateState n v st = st { vars = updateTreeVars n v (vars st) }
+
 -- | Set a variable and update the state
 process :: State -> Command -> IO ()
 process st (Set var e) 
-     = do let st' x = (addHistory st (Set var e)) { vars = updateTreeVars var x (vars st) } 
+     = do let st' x = updateState var x $ addHistory st $ Set var e
               in case eval (vars st) e of
-                  Right a  -> do putStrLn "OK!"
-                                 repl $ st' a
+                  Right x  -> do putStrLn "OK"
+                                 repl $ st' x
                   Left err -> do printErr err
                                  repl $ st
 
 -- | Evaluate an expression and print result to the console                           
 process st (Eval e)
      = do let ev  = eval (vars st) e
-          let st' = st { vars = updateTreeVars "it" (fromRight ev) (vars ((addHistory st (Eval e)) {numCalcs = numCalcs st + 1}))} 
+          let st' = updateState "it" (fromRight ev) $ (addHistory st $ Eval e) {numCalcs = numCalcs st + 1}
               in case ev of
                 Right x  -> do case isInt x of
                                 True -> putStrLn $ show $ truncate x
