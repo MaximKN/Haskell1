@@ -122,9 +122,8 @@ process st (FunctionInit n e)
 
 -- Add functions expressions to list of commands to get executed
 process st (FunctionCall f)
-     = do let val = getValueFromTree f (funcs st)
-              st' = addCommands st (fromJust $ val) in
-              repl st'
+     = let val = getValueFromTree f (funcs st) in
+              repl $ addCommands st (fromJust $ val)
 
 -- | Read, Eval, Print Loop
 -- ^ This reads and parses the input using the pCommand parser, and calls
