@@ -77,7 +77,7 @@ pCommand = do l <- letter -- ^ Variable assignment
                        n <- natural
                        e <- anything
                        return (Loop n e)
-                     ||| do symbol ":"  -- ^ Simplify function            -------------- CAUSING QUIT COMMAND TO NOT WORK!!!!!!! -----------------
+                     ||| do symbol ":"  -- ^ Simplify function
                             string "simplify"
                             e <- pExpr
                             return (Simplify e)
