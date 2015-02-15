@@ -130,7 +130,7 @@ process st (FunctionCall f)
               st' = addCommands st (fromJust $ val) in
               repl st'   
 
-process st (Ctrk c)
+process st (Ctrl c)
     = do 
 
 -- | Read, Eval, Print Loop

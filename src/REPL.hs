@@ -128,10 +128,7 @@ process st (FunctionInit f n e)
 process st (FunctionCall f)
      = do let val = getValueFromTree f (funcs st)
               st' = addCommands st (fromJust $ val) in
-              repl st'   
-
-process st (Ctrl c)
-    = do 
+              repl st'    
 
 -- | Read, Eval, Print Loop
 -- ^ This reads and parses the input using the pCommand parser, and calls

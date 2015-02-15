@@ -3,13 +3,15 @@ module Helper where
 import System.IO
 
 ----------------------- BINARY TREES ------------------------
--- | 
+-- | Alias for variable name
 type Name = String
 
+-- | Binary search tree
 data Tree a = Empty 
             | Node a (Tree a) (Tree a) 
   deriving Show
 
+-- | Gets value from tree using key from key-pair to traverse tree
 getValueFromTree :: (Ord a) => a -> Tree (a, b) -> Maybe b
 getValueFromTree _ Empty = Nothing
 getValueFromTree n (Node (z,q) t1 t2) | n < z = getValueFromTree n t1
