@@ -10,7 +10,7 @@ data Expr = Add Expr Expr
           | Val Float
           | Name Name
           | Err String
-		  | Abs Expr
+		      | Abs Expr
           | Mod Expr Expr
           | Power Expr Expr
   deriving Show
@@ -20,11 +20,13 @@ data Expr = Add Expr Expr
 data Command = Set Name Expr
              | Eval Expr
              | Print Name Name
-             | Loop Name Int String
+             | Loop Name Int Name
+             | FunctionInit Name Name Name
+             | FunctionCall Name
   deriving Show
 
 eval :: Tree (Name, Float) -> -- Variable name to value mapping
-       Expr -> -- Expression to evaluate
+        Expr -> -- Expression to evaluate
         Either String Float -- Result (if no errors such as missing variables)
 
 eval _    (Val x)   = Right x
@@ -65,8 +67,16 @@ pCommand = do l <- letter
                        n <- natural
                        e <- alphanumString
                        return (Loop i n e)
-                    ||| do e <- pExpr
-                           return (Eval e)
+                    ||| do f <- identifier --"function"
+                           n <- identifier -- function name 
+                           symbol "():" -- add list of arguments
+                           e <- alphanumString
+                           return (FunctionInit f n e)
+                        ||| do n <- identifier -- function name 
+                               symbol "()" -- add list of arguments
+                               return (FunctionCall n)
+                            ||| do e <- pExpr
+                                   return (Eval e)
 
 pExpr :: Parser Expr
 pExpr = do t <- pTerm

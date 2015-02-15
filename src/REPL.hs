@@ -6,16 +6,18 @@ import Expr
 import Parsing
 import Helper
 import Data.List 
+import Data.Maybe
 
 data State = State { vars     :: Tree (Name, Float),
+                     funcs    :: Tree (Name, [String]),
                      numCalcs :: Int,
                      history  :: [Command],
                      commands :: [String] }
 
 initState :: State
-initState = State Empty 0 [] []
+initState = State Empty Empty 0 [] []
 
-updateTreeVars :: Name -> Float -> Tree (Name, Float) -> Tree (Name, Float)
+updateTreeVars :: (Ord a) => a -> b -> Tree (a, b) -> Tree (a, b)
 updateTreeVars n v Empty = Node (n,v) Empty Empty
 updateTreeVars n v (Node (x,y) t1 t2) | n < x = Node (x,y) (updateTreeVars n v t1) t2
                                       | n > x = Node (x,y) t1 (updateTreeVars n v t2)
@@ -30,8 +32,8 @@ getHistory :: State -> Int -> Command
 getHistory st n = history st !! n
 
 -- Update variable key-value pairs list
-addVar :: State -> Name -> Float -> State
-addVar st n v = st { vars = updateTreeVars n v (vars st) }
+--addVar :: State -> a -> b -> State
+--addVar st n v = st { vars = updateTreeVars n v (vars st) }
 
 -- Add commands to the commands list in the state
 addCommands :: State -> [String] -> State
@@ -72,7 +74,7 @@ readLine st | hasCommands st  = let cmd = (commands st) !! 0 in
 
 process :: State -> Command -> IO ()
 process st (Set var e) 
-     = do let st' x = addVar (addHistory st (Set var e)) var x  
+     = do let st' x = (addHistory st (Set var e)) { vars = updateTreeVars var x (vars st) } 
               in case eval (vars st) e of
                   Right a  -> do putStrLn "OK!"
                                  repl $ st' a
@@ -82,7 +84,7 @@ process st (Set var e)
 
 process st (Eval e) 
      = do let ev  = eval (vars st) e
-          let st' = addVar ((addHistory st (Eval e)) {numCalcs = numCalcs st + 1}) "it" (fromRight ev)
+          let st' = st { vars = updateTreeVars "it" (fromRight ev) (vars ((addHistory st (Eval e)) {numCalcs = numCalcs st + 1}))} 
               in case ev of
                 Right x  -> do case isInt x of
                                 True -> putStrLn $ show $ truncate x
@@ -101,8 +103,17 @@ process st (Loop i n e)
                                      repl $ st'
           else do putStrLn $ "Usage: loop <n-times> <expression>"
                   repl $ st
-							   
-							   
+
+process st (FunctionInit f n e)
+     = do let st' = st { funcs = updateTreeVars n [e] (funcs st)}
+          if f == "function" then repl $ st'                       
+          else repl $ st
+process st (FunctionCall f)
+     = do let val = getValueFromTree f (funcs st)
+              --ev = fromRight(eval (Empty) (fromJust(val)))  
+              st' = addCommands st (fromJust $ val) in
+              repl st'   
+
 -- Read, Eval, Print Loop
 -- This reads and parses the input using the pCommand parser, and calls
 -- 'process' to process the command.

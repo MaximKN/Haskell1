@@ -9,7 +9,7 @@ data Tree a = Empty
             | Node a (Tree a) (Tree a) 
   deriving Show
 
-getValueFromTree :: Name -> Tree (Name, Float) -> Maybe Float
+getValueFromTree :: (Ord a) => a -> Tree (a, b) -> Maybe b
 getValueFromTree _ Empty = Nothing
 getValueFromTree n (Node (z,q) t1 t2) | n < z = getValueFromTree n t1
                                       | n > z = getValueFromTree n t2
