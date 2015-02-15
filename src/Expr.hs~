@@ -64,27 +64,27 @@ val op vars x y = do x <- eval vars x
 
 -- | Parse commands
 pCommand :: Parser Command
-pCommand = do l <- letter -- Variable assignment
+pCommand = do l <- letter -- ^ Variable assignment
               symbol "="
               e <- pExpr
               return (Set [l] e)
-            ||| do string "print" -- Print statement
+            ||| do string "print" -- ^ Print statement
                    space
                    s <- anything
                    return (Print s)
-                ||| do string "loop"  -- Loop construct
+                ||| do string "loop"  -- ^ Loop construct
                        n <- natural
                        e <- anything
                        return (Loop n e)
-                     ||| do string ":simplify"  -- Simplify function
+                     ||| do string ":simplify"  -- ^ Simplify function
                             e <- pExpr
                             return (Simplify e)
-                          ||| do string "function" -- Function declaration
-                                 n <- identifier -- Function identifier 
+                          ||| do string "function" -- ^ Function declaration
+                                 n <- identifier -- ^ Function identifier 
                                  symbol "():"
                                  e <- anything
                                  return (FunctionInit n e)
-                               ||| do n <- identifier -- Function call
+                               ||| do n <- identifier -- ^ Function call
                                       symbol "()"
                                       return (FunctionCall n)
                                    ||| do e <- pExpr
@@ -93,25 +93,25 @@ pCommand = do l <- letter -- Variable assignment
 -- | Parse expression
 pExpr :: Parser Expr
 pExpr = do t <- pTerm
-           do symbol "+" -- Addition
+           do symbol "+" -- ^ Addition
               e <- pExpr
               return (Add t e)
-            ||| do symbol "-"   -- Subtraction
+            ||| do symbol "-"   -- ^ Subtraction
                    e <- pExpr
                    return (Sub t e) 
                  ||| return t
 
 -- | Parse factors
 pFactor :: Parser Expr
-pFactor = do d <- float     -- Literal
+pFactor = do d <- float     -- ^ Literal
              return (Val d)
-          ||| do v <- identifier    -- Variable
+          ||| do v <- identifier    -- ^ Variable
                  return (Name v)
-              ||| do symbol "|"     -- Absolute value
+              ||| do symbol "|"     -- ^ Absolute value
                      e <- pExpr
                      symbol "|"
                      return (Abs e)
-                  ||| do symbol "(" -- Bracketed expression
+                  ||| do symbol "(" -- ^ Bracketed expression
                          e <- pExpr
                          symbol ")"
                          return e
@@ -120,16 +120,16 @@ pFactor = do d <- float     -- Literal
 -- | Parse terms
 pTerm :: Parser Expr
 pTerm = do f <- pFactor
-           do symbol "*"    -- Multiplication
+           do symbol "*"    -- ^ Multiplication
               t <- pTerm
               return (Mul f t)
-            ||| do symbol "/"   -- Division
+            ||| do symbol "/"   -- ^ Division
                    t <- pTerm
                    return (Div f t)
-                 ||| do symbol "^"  -- Exponential
+                 ||| do symbol "^"  -- ^ Exponential
                         e <- pTerm
                         return (Power f e)
-                    ||| do symbol "mod" -- Modulo
+                    ||| do symbol "mod" -- ^ Modulo
                            e <- pTerm
                            return (Mod f e) 
                         ||| return f

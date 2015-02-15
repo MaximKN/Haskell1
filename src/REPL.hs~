@@ -127,7 +127,7 @@ process st (FunctionCall f)
      = let val = getValueFromTree f (funcs st) in
            repl $ addCommands st $ fromJust $ val
 
--- |Read, Eval, Print Loop
+-- | Read, Eval, Print Loop
 -- ^ This reads and parses the input using the pCommand parser, and calls
 -- ^ 'process' to process the command.
 -- ^ 'process' will call 'repl' when done, so the system loops.
