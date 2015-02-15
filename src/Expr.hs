@@ -11,7 +11,7 @@ data Expr = Add Expr Expr   -- ^ Addition
           | Val Float       -- ^ Single number
           | Name Name       -- ^ Single identifier
           | Err String      -- ^ Error message
-		  | Abs Expr        -- ^ Absolute value
+          | Abs Expr        -- ^ Absolute value
           | Mod Expr Expr   -- ^ Modulo
           | Power Expr Expr -- ^ Power
   deriving Show
@@ -31,15 +31,15 @@ eval :: Tree (Name, Float) -> -- ^ Variable name to value mapping
         Expr ->               -- ^ Expression to evaluate
         Either String Float   -- ^ Result 
 
-eval _    (Val x)       = Right x                         -- ^ Single number
-eval vars (Add x y)     = val (+) vars x y                -- ^ Addition
-eval vars (Sub x y)     = val (-) vars x y                -- ^ Subtraction
-eval vars (Mul x y)     = val (*) vars x y                -- ^ Multiplication
-eval vars (Div x y)     = val (/) vars x y                -- ^ Division
-eval _    (Err msg)     = Left  $ msg                     -- ^ Error message
-eval vars (Abs n)       = Right $ abs (fromRight (eval vars n))   -- ^ absolute value
-eval vars (Power x y)   = Right $ (fromRight (eval vars x))       -- ^ raises one value to the power of another value
-                              ** (fromRight (eval vars y))
+eval _    (Val x)     = Right x                         -- ^ Single number
+eval vars (Add x y)   = val (+) vars x y                -- ^ Addition
+eval vars (Sub x y)   = val (-) vars x y                -- ^ Subtraction
+eval vars (Mul x y)   = val (*) vars x y                -- ^ Multiplication
+eval vars (Div x y)   = val (/) vars x y                -- ^ Division
+eval _    (Err msg)   = Left  $ msg                     -- ^ Error message
+eval vars (Abs x)     = Right $ abs (fromRight (eval vars x))   -- ^ absolute value
+eval vars (Power x y) = Right $ (fromRight (eval vars x))       -- ^ raises one value to the power of another value
+                               ** (fromRight (eval vars y))
 
 eval vars (Name x) 
     = case getValueFromTree x vars of                   -- ^ if a name is in the tree
@@ -47,9 +47,9 @@ eval vars (Name x)
         Nothing -> Left "Use of undeclared variable"    -- ^ error message
     
 eval vars (Mod x y)
-    =  case isInt (fromRight (eval vars x)) && isInt (fromRight (eval vars y)) of        -- ^ checks that both number are the integers
+    =  case isInt (fromRight (eval vars x)) && isInt (fromRight (eval vars y)) of    -- ^ checks that both number are the integers
 		    True -> Right $ fromIntegral $ (toInteger $ round $ fromRight $ eval vars x) -- ^ converts float to the int fro the first value
-                            `mod` (toInteger $ round $ fromRight $ eval vars y)          -- ^ converts float to the int fro the second value
+                                 `mod` (toInteger $ round $ fromRight $ eval vars y) -- ^ converts float to the int fro the second value
 		    False -> Left "Can't mod floats"                                             -- ^ error message				
 
 -- | Apply an operator to the evalution of the left and right expressions       
@@ -76,8 +76,7 @@ pCommand = do l <- letter -- ^ Variable assignment
                        n <- natural
                        e <- anything
                        return (Loop n e)
-                     ||| do symbol ":"  -- ^ Simplify function
-                            string "simplify"
+                     ||| do string ":simplify"  -- ^ Simplify function
                             e <- pExpr
                             return (Simplify e)
                           ||| do string "function" -- ^ Function declaration

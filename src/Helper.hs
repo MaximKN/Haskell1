@@ -17,7 +17,15 @@ getValueFromTree _ Empty = Nothing
 getValueFromTree n (Node (z,q) t1 t2) | n < z = getValueFromTree n t1
                                       | n > z = getValueFromTree n t2
                                       | otherwise = Just q
-
+{-process st (Simp i e)
+	= do case simplify e of 
+		     Left e -> do putStrLn $ show $ e
+		                  repl $ st
+             Right f -> case isInt f of
+                                True -> do putStrLn $ show $ truncate f
+                                           repl st'
+                                False -> do putStrLn $ show $ f
+                                            repl st'-}
 ------------------- END OF BINARY TREES -----------------------
 
 
@@ -77,8 +85,3 @@ dropVar n ((x,y):xs) | n == x = xs
 flatTree :: (Ord a, Ord b) => Tree (a, b) -> [(a, b)]
 flatTree Empty = []
 flatTree (Node x t1 t2) = flatTree t1 ++ [x] ++ flatTree t2
-
-
--- Update variable key-value pairs list
---addVar :: State -> a -> b -> State
---addVar st n v = st { vars = updateTreeVars n v (vars st) }

@@ -25,6 +25,10 @@ updateTreeVars n v (Node (x,y) t1 t2) | n < x = Node (x,y) (updateTreeVars n v t
                                       | n > x = Node (x,y) t1 (updateTreeVars n v t2)
                                       | otherwise = Node (n,v) t1 t2
 
+-- Update variable key-value pairs list
+addVar :: Name -> Float -> State -> State
+addVar n v st = st { vars = updateTreeVars n v (vars st) }
+
 -- | Add a command to the command history in the state
 addHistory :: State -> Command -> State
 addHistory st cmd = st { history = cmd:history st }
@@ -76,9 +80,9 @@ readLine st | hasCommands st  = let cmd = (commands st) !! 0 in
 -- | Set a variable and update the state
 process :: State -> Command -> IO ()
 process st (Set var e) 
-     = do let st' x = (addHistory st (Set var e)) { vars = updateTreeVars var x (vars st) } 
+     = do let st' x = addVar var x $ addHistory st (Set var e)
               in case eval (vars st) e of
-                  Right a  -> do putStrLn "OK!"
+                  Right a  -> do putStrLn "OK"
                                  repl $ st' a
                   Left err -> do printErr err
                                  repl $ st
@@ -86,18 +90,16 @@ process st (Set var e)
 -- | Evaluate an expression and print result to the console                           
 process st (Eval e)
      = do let ev  = eval (vars st) e
-          let st' = st { vars = updateTreeVars "it" (fromRight ev) (vars ((addHistory st (Eval e)) {numCalcs = numCalcs st + 1}))} 
               in case ev of
                 Right x  -> do case isInt x of
-                                   True -> putStrLn $ show $ truncate x
-                                   False -> putStrLn $ show $ x
-                               repl st'
+                                True -> putStrLn $ show $ truncate x
+                                False -> putStrLn $ show $ x
+                               repl $ addVar "it" (fromRight ev) $ (addHistory st $ Eval e) {numCalcs = numCalcs st + 1}
                 Left err -> do putStrLn err
                                repl st
 
 -- | Take an expression and simplify it
-process st (Simplify e)
-    = repl $ st
+process st (Simplify e) = repl $ st
 {-process st (Simp i e)
 	= do case simplify e of 
 		     Left e -> do putStrLn $ show $ e
@@ -123,7 +125,7 @@ process st (FunctionInit n e)
 -- Add functions expressions to list of commands to get executed
 process st (FunctionCall f)
      = let val = getValueFromTree f (funcs st) in
-              repl $ addCommands st (fromJust $ val)
+           repl $ addCommands st $ fromJust $ val
 
 -- | Read, Eval, Print Loop
 -- ^ This reads and parses the input using the pCommand parser, and calls
@@ -136,7 +138,11 @@ repl st = do putStr (show (numCalcs st) ++ " > ")
                case parse pCommand inp of
                   [(cmd, "")] -> process st' cmd -- ^ Must parse entire input
                   _ -> if (isPrefixOf ":" inp) && (length inp >= 2) then exec (words inp) st' -- ^ Execute program command (e.g. :q - quit)
-                            else if '!' `elem` inp then process st' (fromRight (getHistory st' n)) -- ^ Get the most recent command from history
+                            else if '!' `elem` inp then do case getHistory st' n of 
+                                                            Left s -> putStrLn s
+                                                            Right command -> process st' command -- ^ Get the most recent command from history and execute it
+                                                           repl st'
+                                                       
                                 else do printErr $ "Could not parse \"" ++ inp ++ "\""
                                         repl st'
                             where n = read $ drop 1 inp :: Int
