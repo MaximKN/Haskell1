@@ -2,7 +2,7 @@ module Helper where
 
 import System.IO
 
-------------------- BINARY TREES -----------------------
+----------------------- BINARY TREES ------------------------
 type Name = String
 
 data Tree a = Empty 
@@ -15,8 +15,11 @@ getValueFromTree n (Node (z,q) t1 t2) | n < z = getValueFromTree n t1
                                       | n > z = getValueFromTree n t2
                                       | otherwise = Just q
 
+------------------- END OF BINARY TREES -----------------------
+
 
 -- check if a floating point number can be converted into an int
+isInt   :: RealFrac a => a -> Bool
 isInt x = x == fromInteger (round x)
 
 -- Similar to function word, except it takes a predicate

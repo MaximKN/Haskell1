@@ -1,11 +1,10 @@
-{- LANGUAGE DatatypeContexts -}
-
 module REPL where
 
 import Expr
 import Parsing
 import Helper
 import Data.List 
+import Simplify
 
 data State = State { vars     :: Tree (Name, Float),
                      numCalcs :: Int,
@@ -91,16 +90,27 @@ process st (Eval e)
                 Left err -> do putStrLn err
                                repl st
 
+process st (Simp i e)
+	= do if i == "simplify" then
+		do case simplify e of 
+		     Left e -> do putStrLn $ show $ e
+                                  repl $ st
+		     Right f -> do case isInt f of
+					True -> putStrLn $ show $ truncate f
+					False -> putStrLn $ show $ f
+				   repl $ st
+	      else repl $ st
+
 process st (Print i s)
-     = do if i == "echo" then putStrLn $ show $ s
-          else putStrLn $ "Unrecognized print command"
-          repl $ st
+     = do if i == "echo" then
+	     do putStrLn $ show $ s
+	        repl $ st
+           else repl $ st
 
 process st (Loop i n e)
      = do if i == "loop" then do let st' = addCommands st (replicate n e) in
                                      repl $ st'
-          else do putStrLn $ "Usage: loop <n-times> <expression>"
-                  repl $ st
+          else repl $ st
 							   
 							   
 -- Read, Eval, Print Loop

@@ -10,7 +10,7 @@ data Expr = Add Expr Expr
           | Val Float
           | Name Name
           | Err String
-		  | Abs Expr
+          | Abs Expr
           | Mod Expr Expr
           | Power Expr Expr
   deriving Show
@@ -21,10 +21,11 @@ data Command = Set Name Expr
              | Eval Expr
              | Print Name Name
              | Loop Name Int String
+	     | Simp Name Expr
   deriving Show
 
 eval :: Tree (Name, Float) -> -- Variable name to value mapping
-       Expr -> -- Expression to evaluate
+        Expr -> -- Expression to evaluate
         Either String Float -- Result (if no errors such as missing variables)
 
 eval _    (Val x)   = Right x
@@ -38,11 +39,9 @@ eval vars (Name x)  = case getValueFromTree x vars of
                         Nothing -> Left "Use of undeclared variable"
 
 eval vars (Abs n) = Right (abs (fromRight (eval vars n)))
-
 eval vars (Mod x y) = case isInt (fromRight (eval vars x)) && isInt (fromRight (eval vars y)) of
-						True -> Right $ fromIntegral $ (toInteger $ round $ fromRight $ eval vars x) `mod` (toInteger $ round $ fromRight $ eval vars y)
-									--Right (((fromInteger (round (fromRight (eval vars x))))) `mod` ((fromInteger (round (fromRight (eval vars y))))))
-						False -> Left "Can't mod floats"
+                           True -> Right $ fromIntegral $ (toInteger $ round $ fromRight $ eval vars x) `mod` (toInteger $ round $ fromRight $ eval vars y)
+			   False -> Left "Can't mod floats"
 						
 eval vars (Power x y) = Right ((fromRight (eval vars x)) ** (fromRight (eval vars y)))
 eval _ _ = Left "Couldn't evaluate expression" -- catch errors
@@ -65,8 +64,12 @@ pCommand = do l <- letter
                        n <- natural
                        e <- alphanumString
                        return (Loop i n e)
-                    ||| do e <- pExpr
-                           return (Eval e)
+                    ||| do symbol ":" 
+			   i <- identifier
+			   e <- pExpr
+			   return (Simp i e)
+			 ||| do e <- pExpr
+                                return (Eval e)
 
 pExpr :: Parser Expr
 pExpr = do t <- pTerm

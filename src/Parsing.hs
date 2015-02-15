@@ -145,10 +145,6 @@ token p                       =  do space
                                     space
                                     return v
 
-									{-
-echoString                    :: Parser String
-echoString                    =  do s <- token character 
--}
 identifier                    :: Parser String
 identifier                    =  token ident
 
