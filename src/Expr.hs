@@ -68,7 +68,6 @@ pCommand :: Parser Command
 pCommand = do l <- letter -- Variable assignment
               symbol "="
               e <- pExpr
-
               return (Set [l] e)
             ||| do string "print" -- Print statement
                    space
