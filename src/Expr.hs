@@ -12,7 +12,6 @@ data Expr = Add Expr Expr   -- ^ Addition
           | Div Expr Expr   -- ^ Division
           | Val Lit         -- ^ Single number
           | Name Name       -- ^ Single identifier
-          | Err String      -- ^ Error message
           | Abs Expr        -- ^ Absolute value
           | Mod Expr Expr   -- ^ Modulo
           | Power Expr Expr -- ^ Power
@@ -40,7 +39,6 @@ eval vars (Add x y)   = val (+) vars x y
 eval vars (Sub x y)   = val (-) vars x y
 eval vars (Mul x y)   = val (*) vars x y
 eval vars (Div x y)   = val (/) vars x y
-eval _    (Err msg)   = Left  $ msg
 eval vars (Abs x)     = Right $ abs (fromRight (eval vars x))
 {-}
 eval vars (Power x y) = Right $ (fromRight (eval vars x))
@@ -76,7 +74,7 @@ val op vars x y = do x <- eval vars x
 pCommand :: Parser Command
 pCommand = do symbol ":"
               do char 'q' -- Quit command
-                 return (Quit)
+                 return Quit
                ||| do char 'l' -- Load command
                       space --------------------------- FIX THIS REQUIREMENT
                       filename <- anything
@@ -132,7 +130,6 @@ pFactor = do d <- floatInt     -- Literal
                          e <- pExpr
                          symbol ")"
                          return e
-                      ||| return (Err ("Could not parse expression"))
 
 -- | Parse terms
 pTerm :: Parser Expr

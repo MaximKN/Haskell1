@@ -132,15 +132,15 @@ float                          :: Parser Float
 float                          = do i <- int
                                     do char '.'
                                        f <- nat
-                                       return (read ((show i) ++ "." ++ (show f)) :: Float)
+                                       return (read (show i ++ "." ++ show f) :: Float)
                                      ||| return (read (show i) :: Float)
 
 floatInt                        :: Parser Lit
 floatInt                        = do i <- int
                                      do char '.'
                                         f <- nat
-                                        return (FLit (read(show(i) ++ "."
-                                                  ++ show(f))))
+                                        return (FLit (read(show i ++ "."
+                                                  ++ show f)))
                                       ||| return (ILit i)
                    
 space                         :: Parser ()
