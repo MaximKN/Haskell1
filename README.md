@@ -5,6 +5,12 @@ Release date: 16 Feb 2015
 =====================================
 
 The PC application for the School of Computer Science CS2006.
+The aim of this project is to develop a calculator program, 
+which allows the user to enter arithmetic operations interactively using the keyboard, 
+and immediately display the value of such expressions on the screen. 
+The application should also provide support for variable assignment, error handling and command history. 
+To combine the notion of modeling interactive programs as pure functions with the required side effects, 
+we will use Haskell approach of using a new type along with primitives.
 
 =====================================
 DESCRIPTION
