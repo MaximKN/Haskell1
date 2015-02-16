@@ -27,8 +27,8 @@ data Command = Set Name Expr                -- ^ Setting expression to the varia
   deriving Show
 
 -- |Evaluation function evaluates a given expression and produces the result 
-eval :: Tree (Name, Float)   -- ^ Variable name to value mapping
-        -> Expr               -- ^ Expression to evaluate
+eval :: Tree (Name, Float)       -- ^ Variable name to value mapping
+        -> Expr                  -- ^ Expression to evaluate
         -> Either String Float   -- ^ Result 
         
 eval _    (Val x)     = Right x
