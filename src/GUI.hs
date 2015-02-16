@@ -96,7 +96,8 @@ main = do
 switchOpNum :: Button -> Label -> IO ()
 switchOpNum b l = do label <- get b buttonLabel
                      strin <- labelGetLabel l
-                     labelSetText l ((strin::String) ++ (label::String))
+                     -- Due to bug in the recent Gtk2Hs version, those labels has to be cased to string
+                     labelSetText l ((strin::String) ++ (label::String))  
 
 -- Clears the given label
 clearLabel :: Label -> IO ()
