@@ -58,6 +58,7 @@ val :: (Float -> Float -> Float)     -- ^ Operator function
               -> Expr                -- ^ Left expression
               -> Expr                -- ^ Right expression
               -> Either String Float -- ^ Result
+              
 val op vars x y = do x <- eval vars x
                      y <- eval vars y
                      return (op x y)
@@ -67,6 +68,7 @@ pCommand :: Parser Command
 pCommand = do l <- letter -- Variable assignment
               symbol "="
               e <- pExpr
+
               return (Set [l] e)
             ||| do string "print" -- Print statement
                    space
