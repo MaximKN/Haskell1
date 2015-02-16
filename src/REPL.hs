@@ -9,11 +9,11 @@ import Data.Maybe
 import Control.Exception
 
 -- |Maintain state of program
-data State = State { vars     :: Tree (Name, Float), -- Stores variables
+data State = State { vars     :: Tree (Name, Float),    -- Stores variables
                      funcs    :: Tree (Name, [String]), -- Stores functions and their definitions
-                     numCalcs :: Int, -- Keeps track of the number of calculations
-                     history  :: [Command], -- Keeps track of command history
-                     commands :: [String] } -- List of commands to be executed
+                     numCalcs :: Int,                   -- Keeps track of the number of calculations
+                     history  :: [Command],             -- Keeps track of command history
+                     commands :: [String] }             -- List of commands to be executed
 
 -- |Initialize state to default values
 initState :: State
