@@ -74,10 +74,10 @@ process st (Set var e)
 process st (Eval e)
      = let ev  = eval (vars st) e
               in case ev of
-                Right x  -> print x{-do case isInt x of
-                                True -> putStrLn $ show $ truncate x
-                                False -> putStrLn $ show $ x
-                               repl $ addVar "it" (fromRight ev) $ (addHistory st $ Eval e) {numCalcs = numCalcs st + 1}-}
+                Right x  -> do case x of
+                                   ILit x -> print x
+                                   FLit x -> print x
+                               repl $ addVar "it" x $ (addHistory st $ Eval e) {numCalcs = numCalcs st + 1}
                 Left err -> do putStrLn err
                                repl st
 

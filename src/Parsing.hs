@@ -127,14 +127,7 @@ int                           =  do char '-'
                                     return (-n)
                                   ||| nat
 
--- | Parsers input for a floating point number
-float                          :: Parser Float
-float                          = do i <- int
-                                    do char '.'
-                                       f <- nat
-                                       return (read (show i ++ "." ++ show f) :: Float)
-                                     ||| return (read (show i) :: Float)
-
+-- | Parsers input for a float or int
 floatInt                        :: Parser Lit
 floatInt                        = do i <- int
                                      do char '.'
