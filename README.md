@@ -19,7 +19,7 @@ It supports: 1. all arithmetic operations
 			 
 
 =====================================
-RUNNING CONFIGURATIONS
+RUNNING INSTRUCTIONS
 =====================================
 
 First of all, you need to initialize sandbox by typing in a command prompt:
@@ -32,8 +32,8 @@ This will generate an executable file that can be accessed in:
 	./dist/build/Haskell1/Haskell1
 The GUI is not included in the configuration file. However, it can be run by GHCI 
 	ghci GUI.hs
-
-This project depends on the GUI library called Gtk2Hs.
+	
+This project uses GUI library called Gtk2Hs.
 It should be in the sandbox, BUT
 if you have any problems with it, you can download it from:
 	http://projects.haskell.org/gtk2hs/

@@ -6,6 +6,7 @@ import Helper
 import Data.List 
 import Simplify
 import Data.Maybe
+import Control.Exception
 
 -- |Maintain state of program
 data State = State { vars     :: Tree (Name, Float), -- Stores variables
@@ -58,9 +59,12 @@ load :: [String] -> State -> IO ()
 load cmd st = case (length cmd /= 2) of
                     True -> do putStrLn "Usage: :l <filename>"
                                repl st
-                    False -> do contents <- loadFile (cmd !! 1)
-                                let st' = addCommands st (wordsWhen (=='\n') contents) in
-                                  repl st'
+                    False -> do result <- try $ loadFile (cmd !! 1) :: IO (Either IOException String)
+                                case result of 
+                                  Left exception -> do putStrLn $ "Fault: " ++ show exception
+                                                       repl st
+                                  Right contents -> let st' = addCommands st (wordsWhen (=='\n') contents) in
+                                                        repl st'
 
 -- |Execute a program command
 exec :: [String] -> State -> IO ()
