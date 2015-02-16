@@ -8,7 +8,7 @@ import Simplify
 import Data.Maybe
 
 -- |Maintain state of program
-data State = State { vars     :: Tree (Name, Float), -- Stores variables
+data State = State { vars     :: Tree (Name, Lit), -- Stores variables
                      funcs    :: Tree (Name, [String]), -- Stores functions and their definitions
                      numCalcs :: Int, -- Keeps track of the number of calculations
                      history  :: [Command], -- Keeps track of command history
@@ -26,7 +26,7 @@ updateTreeVars n v (Node (x,y) t1 t2) | n < x = Node (x,y) (updateTreeVars n v t
                                       | otherwise = Node (n,v) t1 t2
 
 -- |Update variable key-value pairs list
-addVar :: Name -> Float -> State -> State
+addVar :: Name -> Lit -> State -> State
 addVar n v st = st { vars = updateTreeVars n v (vars st) }
 
 -- |Add a command to the command history in the state
@@ -52,23 +52,6 @@ removeCommand :: State -> State
 removeCommand st = case commands st of
                       [] -> st
                       _:xs -> st { commands = xs }
-					  
--- |Handles the errors of loading a file
-load :: [String] -> State -> IO ()
-load cmd st = case (length cmd /= 2) of
-                    True -> do putStrLn "Usage: :l <filename>"
-                               repl st
-                    False -> do contents <- loadFile (cmd !! 1)
-                                let st' = addCommands st (wordsWhen (=='\n') contents) in
-                                  repl st'
-
--- |Execute a program command
-exec :: [String] -> State -> IO ()
-exec cmd st = case head cmd of
-                ":q" -> putStrLn "Bye"
-                ":l" -> load cmd st
-                _    -> do putStrLn $ "\"" ++ head cmd ++ "\" not recognized command"
-                           repl st
 
 -- |Get next command in the list of commands in state, otherwise read command from console
 readLine :: State -> IO String
@@ -84,19 +67,25 @@ process st (Set var e)
               in case eval (vars st) e of
                   Right a  -> do putStrLn "OK"
                                  repl $ st' a
-                  Left err -> do printErr err
+                  Left err -> do putStrLn err
                                  repl $ st
 
 -- |Evaluate an expression and print result to the console                           
 process st (Eval e)
      = do let ev  = eval (vars st) e
               in case ev of
-                Right x  -> do case isInt x of
+                Right x  -> putStrLn $ show $ x{-do case isInt x of
                                 True -> putStrLn $ show $ truncate x
                                 False -> putStrLn $ show $ x
-                               repl $ addVar "it" (fromRight ev) $ (addHistory st $ Eval e) {numCalcs = numCalcs st + 1}
+                               repl $ addVar "it" (fromRight ev) $ (addHistory st $ Eval e) {numCalcs = numCalcs st + 1}-}
                 Left err -> do putStrLn err
                                repl st
+
+process st (Quit) = putStrLn "Bye!"
+
+process st (Load filename) = do contents <- readFile filename
+                                let st' = addCommands st (wordsWhen (=='\n') contents) in
+                                  repl st'
 
 -- |Take an expression and simplify it
 process st (Simplify e) = repl $ st
@@ -137,12 +126,11 @@ repl st = do putStr (show (numCalcs st) ++ " > ")
              let st' = removeCommand st in -- remove command from list if file was used
                case parse pCommand inp of
                   [(cmd, "")] -> process st' cmd -- Must parse entire input
-                  _ -> if (isPrefixOf ":" inp) && (length inp >= 2) then exec (words inp) st' -- Execute program command (e.g. :q - quit)
-                            else if '!' `elem` inp then do case getHistory st' n of 
-                                                            Left s -> putStrLn s
-                                                            Right command -> process st' command -- Get the most recent command from history and execute it
-                                                           repl st'
-                                                       
-                                else do printErr $ "Could not parse \"" ++ inp ++ "\""
-                                        repl st'
+                  _ -> if '!' `elem` inp then
+                            do case getHistory st' n of 
+                                      Left s -> putStrLn s
+                                      Right command -> process st' command -- Get the most recent command from history and execute it
+                               repl st'                                
+                       else do putStrLn $ "Could not parse \"" ++ inp ++ "\""
+                               repl st'
                             where n = read $ drop 1 inp :: Int

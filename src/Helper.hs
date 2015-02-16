@@ -2,6 +2,36 @@ module Helper where
 
 import System.IO
 
+data Lit = ILit Int
+         | FLit Float
+         | SLit String
+  deriving Show
+
+instance Num Lit where
+--  (+) (ILit x) (ILit y) = x + y
+  (+) (FLit x) (FLit y) = FLit (x + y)
+  --(+) (ILit x) (FLit y) = FLit (x + y)
+  --(+) (FLit x) (ILit y) = FLit (x + y)
+  (+) (SLit x) (SLit y) = SLit ((show x) ++ (show y))
+  --(+) (ILit x) (FLit y) = FLit (x + y)
+
+  (*) (ILit x) (ILit y) = ILit (x * y)
+  (*) (FLit x) (FLit y) = FLit (x * y)
+  --(*) (ILit x) (FLit y) = FLit (x * y)
+  --(*) (FLit x) (ILit y) = FLit (x * y)
+
+instance Fractional Lit where
+  (/) (FLit x) (FLit y)  = FLit (x / y)
+
+{-}
+instance Floating Lit where
+  (**) (Flit x) (Flit y) = FLit (x ** y)
+-}
+{-}
+instance Integral Lit where
+  (div) (ILit x) (ILit y) = ILit (x `div` y)
+-}
+
 ----------------------- BINARY TREES ------------------------
 -- | Alias for variable name
 type Name = String
@@ -30,8 +60,9 @@ getValueFromTree n (Node (z,q) t1 t2) | n < z = getValueFromTree n t1
 
 
 -- check if a floating point number can be converted into an int
-isInt   :: RealFrac a => a -> Bool
+{-isInt   :: Lit a => a -> Bool
 isInt x = x == fromInteger (round x)
+-}
 
 -- Similar to function word, except it takes a predicate
 -- Src: http://stackoverflow.com/a/4981265/2849447
@@ -40,14 +71,6 @@ wordsWhen p s =  case dropWhile p s of
                       "" -> []
                       s' -> w : wordsWhen p s''
                             where (w, s'') = break p s'
-                            
--- Read file from memory
-loadFile :: String -> IO String
-loadFile filename = readFile filename
-
--- Print to the error stream (stderr)
-printErr :: String -> IO ()
-printErr err = hPutStrLn stderr err
 
 -- Src: https://hackage.haskell.org/package/either-unwrap-1.1/docs/src/Data-Either-Unwrap.html#isRight
 -- | The 'fromRight' function extracts the element out of a 'Right' and
@@ -55,33 +78,3 @@ printErr err = hPutStrLn stderr err
 fromRight           :: Either a b -> b
 fromRight (Left _)  = error "Either.Unwrap.fromRight: Argument takes form 'Left _'" -- yuck
 fromRight (Right x) = x
-
------------------------ UNUSED FUNCTIONS ------------------------
-
--- Get value from list of vars
-getIdent :: Name -> [(Name, Int)] -> Maybe Int
-getIdent _ [] = Nothing
-getIdent n ((x,y):xs) | n == x = Just y
-                      | otherwise = getIdent n xs
-
--- Get value from the list by name
-getValueFromList :: Name -> [(Name, Int)] -> Int
-getValueFromList _ [] = 0
-getValueFromList n ((x,y):xs) | n == x = y
-                              | otherwise = getValueFromList n xs
-
--- Given a variable name and a value, return a new set of variables with
--- that name and value added.
--- If it already exists, remove the old value
-updateListVars :: Name -> Int -> [(Name, Int)] -> [(Name, Int)]
-updateListVars n v xs = (n,v):dropVar n xs
-
--- Return a new set of variables with the given name removed
-dropVar :: Name -> [(Name, Int)] -> [(Name, Int)]
-dropVar _ [] = []
-dropVar n ((x,y):xs) | n == x = xs
-                     | otherwise = (x,y):dropVar n xs
-
-flatTree :: (Ord a, Ord b) => Tree (a, b) -> [(a, b)]
-flatTree Empty = []
-flatTree (Node x t1 t2) = flatTree t1 ++ [x] ++ flatTree t2
