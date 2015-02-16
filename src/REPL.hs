@@ -10,7 +10,6 @@ import Control.Exception
 
 -- |Maintain state of program
 data State = State { vars     :: Tree (Name, Lit), -- Stores variables
-data State = State { vars     :: Tree (Name, Float),    -- Stores variables
                      funcs    :: Tree (Name, [String]), -- Stores functions and their definitions
                      numCalcs :: Int,                   -- Keeps track of the number of calculations
                      history  :: [Command],             -- Keeps track of command history

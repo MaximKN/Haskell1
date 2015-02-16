@@ -80,11 +80,14 @@ letter                        =  sat isAlpha
 alphanum                      :: Parser Char
 alphanum                      =  sat isAlphaNum
 
-any					                  :: Parser Char
-any					                  = sat isAnything
+any					          :: Parser Char
+any					          = sat isAnything
 
-isAnything					          :: Char -> Bool
-isAnything	c				          = True
+isAnything					  :: Char -> Bool
+isAnything	c				  = True
+
+character                     :: Parser Char
+character                     = sat isAnything
 
 char                          :: Char -> Parser Char
 char x                        =  sat (== x)
@@ -111,8 +114,8 @@ ident                         =  do x  <- lower
 -- | Accepts any characters from the input stream
 anything                      :: Parser String
 anything                      =  do x  <- character
-                              xs <- many character
-                              return (x:xs)                              
+                                    xs <- many character
+                                    return (x:xs)                              
 									
 nat                           :: Parser Int
 nat                           =  do xs <- many1 digit
