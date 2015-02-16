@@ -41,10 +41,10 @@ eval vars (Sub x y)   = val (-) vars x y
 eval vars (Mul x y)   = val (*) vars x y
 eval vars (Div x y)   = val (/) vars x y
 eval vars (Abs x)     = Right $ abs (fromRight (eval vars x))
-{-}
+
 eval vars (Power x y) = Right $ (fromRight (eval vars x))
                                ** (fromRight (eval vars y))
--}
+
 eval vars (Name x) 
     = case getValueFromTree x vars of
         Just a  -> Right a
@@ -64,13 +64,12 @@ val :: (Lit -> Lit -> Lit)     -- ^ Operator function
               -> Expr                -- ^ Left expression
               -> Expr                -- ^ Right expression
               -> Either Err Lit -- ^ Result
-  
+
+-- |Get the literal value of an evaluated expression
 val op vars x y = do x <- eval vars x
                      y <- eval vars y
                      return (op x y)
-
---val op vars x y = op (eval vars x) (eval vars y)
-
+                     
 -- | Parse commands
 pCommand :: Parser Command
 pCommand = do symbol ":"
