@@ -8,7 +8,7 @@ data Lit = ILit Int
   deriving Show
 
 instance Num Lit where
---  (+) (ILit x) (ILit y) = x + y
+  (+) (ILit x) (ILit y) = ILit (x + y)
   (+) (FLit x) (FLit y) = FLit (x + y)
   --(+) (ILit x) (FLit y) = FLit (x + y)
   --(+) (FLit x) (ILit y) = FLit (x + y)

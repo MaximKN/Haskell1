@@ -3,7 +3,6 @@ module REPL where
 import Expr
 import Parsing
 import Helper
-import Data.List 
 import Simplify
 import Data.Maybe
 import Control.Exception
@@ -82,26 +81,21 @@ process st (Eval e)
                 Left err -> do putStrLn err
                                repl st
 
-process st (Quit) = putStrLn "Bye!"
-
 process st (Load filename) = do contents <- try $ readFile filename :: IO (Either IOException String)
                                 case contents of 
-                                  Left exception -> do putStrLn $ "Fault: " ++ show exception
+                                  Left exception -> do print exception
                                                        repl st
                                   Right contents -> let st' = addCommands st (wordsWhen (=='\n') contents) in
                                                         repl st'
 
+-- |Quit application
+process _ (Quit) = putStrLn "Bye!"
+
 -- |Take an expression and simplify it
-process st (Simplify e) = repl st
-{-process st (Simp i e)
-	= do case simplify e of 
-		     Left e -> do putStrLn $ show $ e
-		                  repl $ st
-             Right f -> case isInt f of
-                                True -> do putStrLn $ show $ truncate f
-                                           repl st'
-                                False -> do putStrLn $ show $ f
-                                            repl st'-}
+process st (Simplify e) = do case simplify e of 
+                               Left err -> print err
+                               Right e  -> print e
+                             repl $ st
                                             
 -- |Take a string and print it to the console
 process st (Print s) = do putStrLn s
@@ -120,6 +114,12 @@ process st (FunctionCall f)
      = let val = getValueFromTree f (funcs st) in
            repl $ addCommands st $ fromJust val
 
+process st (History index)
+    = do case getHistory st index of 
+              Left s -> putStrLn s
+              Right command -> process st command -- Get the most recent command from history and execute it
+         repl st
+
 -- |Read, Eval, Print Loop
 -- ^ This reads and parses the input using the pCommand parser, and calls
 -- ^ 'process' to process the command.
@@ -130,11 +130,6 @@ repl st = do putStr (show (numCalcs st) ++ " > ")
              let st' = removeCommand st in -- remove command from list if file was used
                case parse pCommand inp of
                   [(cmd, "")] -> process st' cmd -- Must parse entire input
-                  _ -> if '!' `elem` inp then
-                            do case getHistory st' n of 
-                                      Left s -> putStrLn s
-                                      Right command -> process st' command -- Get the most recent command from history and execute it
-                               repl st'                                
-                       else do putStrLn $ "Could not parse \"" ++ inp ++ "\""
-                               repl st'
-                            where n = read $ drop 1 inp :: Int
+                  _ -> do putStrLn $ "Error: could not parse \"" ++ inp ++ "\"."
+                          repl st'
+                          

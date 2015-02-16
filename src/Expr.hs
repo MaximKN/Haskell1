@@ -26,6 +26,7 @@ data Command = Set Name Expr                -- ^ Setting expression to the varia
              | FunctionCall Name            -- ^ Calling function
              | Simplify Expr
              | Load Name
+             | History Int
              | Quit
   deriving Show
 
@@ -79,21 +80,24 @@ pCommand = do symbol ":"
                       space --------------------------- FIX THIS REQUIREMENT
                       filename <- anything
                       return (Load filename)
-            ||| do l <- letter -- Variable assignment
-                   symbol "="
-                   e <- pExpr
-                   return (Set [l] e)
-                 ||| do string "print" -- Print statement
-                        space
-                        s <- anything
-                        return (Print s)
-                      ||| do string "loop"  -- Loop construct
-                             n <- natural
-                             e <- anything
-                             return (Loop n e)
-                           ||| do string ":simplify"  -- Simplify function
-                                  e <- pExpr
-                                  return (Simplify e)
+                    ||| do char 's'  -- Simplify function
+                           e <- pExpr
+                           return (Simplify e)
+            ||| do char '!'
+                   index <- int
+                   return (History index)
+                 ||| do l <- letter -- Variable assignment
+                        symbol "="
+                        e <- pExpr
+                        return (Set [l] e)
+                      ||| do string "print" -- Print statement
+                             space
+                             s <- anything
+                             return (Print s)
+                           ||| do string "loop"  -- Loop construct
+                                  n <- natural
+                                  e <- anything
+                                  return (Loop n e)
                                 ||| do string "function" -- Function declaration
                                        n <- identifier -- Function identifier 
                                        symbol "():"

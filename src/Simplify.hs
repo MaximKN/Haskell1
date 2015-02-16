@@ -2,14 +2,11 @@ module Simplify where
 import Expr
 import Helper
 
-simplify e = e
-
-{-}
-simplify :: Expr -> Either String Float
+simplify :: Expr -> Either String Lit
 simplify e = simp e
 
 
-simp :: Expr -> Either String Float
+simp :: Expr -> Either String Lit
 simp (Add x y) = if areFloats (Add x y) then
 					Right (fromRight (eval (Empty) (Add x y)))
 		 		 else case eval (Empty) x of
@@ -21,7 +18,7 @@ simp (Add x y) = if areFloats (Add x y) then
 			-- try and evaluate the left and right side as much as possible
 			-- then concatenate results
 			--Left $ (show (fromRight (eval (Empty) e))) ++ (stringToSymbol e) ++ (show (fromRight (eval (Empty) e)))
--}
+
 -- function to convert variable expression to variable name
 getVarName :: Expr -> String
 getVarName (Name x) = x
