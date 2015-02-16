@@ -37,8 +37,8 @@ instance Integral Lit where
 type Name = String
 
 -- | Binary search tree
-data Tree a = Empty 
-            | Node a (Tree a) (Tree a) 
+data Tree a = Empty
+            | Node a (Tree a) (Tree a)
   deriving Show
 
 -- | Gets value from tree using key from key-pair to traverse tree
@@ -58,23 +58,26 @@ getValueFromTree n (Node (z,q) t1 t2) | n < z = getValueFromTree n t1
                                             repl st'-}
 ------------------- END OF BINARY TREES -----------------------
 
-
 -- check if a floating point number can be converted into an int
 {-isInt   :: Lit a => a -> Bool
+======
+-- | Check if a floating point number can be converted into an int
+isInt   :: RealFrac a => a -> Bool
+>>>>>>> bfc8c004b28c1a31dff8a9c74b868fd1189064d5
 isInt x = x == fromInteger (round x)
 -}
 
--- Similar to function word, except it takes a predicate
--- Src: http://stackoverflow.com/a/4981265/2849447
+-- | Similar to function word, except it takes a predicate
+-- | Src: http://stackoverflow.com/a/4981265/2849447
 wordsWhen     :: (Char -> Bool) -> String -> [String]
 wordsWhen p s =  case dropWhile p s of
                       "" -> []
                       s' -> w : wordsWhen p s''
                             where (w, s'') = break p s'
-
--- Src: https://hackage.haskell.org/package/either-unwrap-1.1/docs/src/Data-Either-Unwrap.html#isRight
+                            
 -- | The 'fromRight' function extracts the element out of a 'Right' and
--- throws an error if its argument take the form  @Left _@.
+-- | throws an error if its argument take the form  @Left _@.
+-- | Src: https://hackage.haskell.org/package/either-unwrap-1.1/docs/src/Data-Either-Unwrap.html#isRight
 fromRight           :: Either a b -> b
 fromRight (Left _)  = error "Either.Unwrap.fromRight: Argument takes form 'Left _'" -- yuck
 fromRight (Right x) = x

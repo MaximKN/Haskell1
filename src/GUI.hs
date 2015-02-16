@@ -5,7 +5,6 @@ import Expr
 import Helper
 import Parsing
 
---| Main function to run a GUI
 main :: IO ()
 main = do
   initGUI
@@ -27,7 +26,7 @@ main = do
   tableAttachDefaults table equalsButton 2 3 4 5
 
   -- Digits
-  
+
   button0 <- buttonNewWithLabel "0"
   onClicked button0 (switchOpNum button0 txtstack)
   tableAttachDefaults table button0 0 1 4 5
@@ -93,17 +92,18 @@ main = do
 
 -- Event handlers
 
---| This function takes the text from the button and put it on the label
+-- This function takes the text from the button and put it on the label
 switchOpNum :: Button -> Label -> IO ()
 switchOpNum b l = do label <- get b buttonLabel
                      strin <- labelGetLabel l
-                     labelSetText l ((strin::String) ++ (label::String))
+                     -- Due to bug in the recent Gtk2Hs version, those labels has to be cased to string
+                     labelSetText l ((strin::String) ++ (label::String))  
 
---| Clears the given label
+-- Clears the given label
 clearLabel :: Label -> IO ()
 clearLabel l = labelSetText l ""
 
---| Evaluates the expression, converts it to the int, and puts it on the label
+-- Evaluates the expression, converts it to the int, and puts it on the label
 equalsHandler :: Label -> IO ()
 equalsHandler l = 
   do txt <- labelGetLabel l

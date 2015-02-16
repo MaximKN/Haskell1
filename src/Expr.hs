@@ -107,6 +107,32 @@ pCommand = do symbol ":"
                                           ||| do e <- pExpr
                                                  return (Eval e)
 
+pCommand = do l <- letter -- Variable assignment
+              symbol "="
+              e <- pExpr
+              return (Set [l] e)
+            ||| do string "print" -- Print statement
+                   space
+                   s <- anything
+                   return (Print s)
+                ||| do string "loop"  -- Loop construct
+                       n <- natural
+                       e <- anything
+                       return (Loop n e)
+                     ||| do string ":simplify"  -- Simplify function
+                            e <- pExpr
+                            return (Simplify e)
+                          ||| do string "function" -- Function declaration
+                                 n <- identifier -- Function identifier 
+                                 symbol "():"
+                                 e <- anything
+                                 return (FunctionInit n e)
+                               ||| do n <- identifier -- Function call
+                                      symbol "()"
+                                      return (FunctionCall n)
+                                   ||| do e <- pExpr
+                                          return (Eval e)
+
 -- | Parse expression
 pExpr :: Parser Expr
 pExpr = do t <- pTerm

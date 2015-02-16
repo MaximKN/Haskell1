@@ -6,13 +6,15 @@ import Helper
 import Data.List 
 import Simplify
 import Data.Maybe
+import Control.Exception
 
 -- |Maintain state of program
 data State = State { vars     :: Tree (Name, Lit), -- Stores variables
+data State = State { vars     :: Tree (Name, Float),    -- Stores variables
                      funcs    :: Tree (Name, [String]), -- Stores functions and their definitions
-                     numCalcs :: Int, -- Keeps track of the number of calculations
-                     history  :: [Command], -- Keeps track of command history
-                     commands :: [String] } -- List of commands to be executed
+                     numCalcs :: Int,                   -- Keeps track of the number of calculations
+                     history  :: [Command],             -- Keeps track of command history
+                     commands :: [String] }             -- List of commands to be executed
 
 -- |Initialize state to default values
 initState :: State
@@ -83,9 +85,12 @@ process st (Eval e)
 
 process st (Quit) = putStrLn "Bye!"
 
-process st (Load filename) = do contents <- readFile filename
-                                let st' = addCommands st (wordsWhen (=='\n') contents) in
-                                  repl st'
+process st (Load filename) = do contents <- try $ readFile filename :: IO (Either IOException String)
+                                case contents of 
+                                  Left exception -> do putStrLn $ "Fault: " ++ show exception
+                                                       repl st
+                                  Right contents -> let st' = addCommands st (wordsWhen (=='\n') contents) in
+                                                        repl st'
 
 -- |Take an expression and simplify it
 process st (Simplify e) = repl $ st
