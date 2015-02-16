@@ -112,7 +112,7 @@ equalsHandler l =
        [(cmd, "")] -> 
         case cmd of 
           Eval e ->
-            labelSetText l $ show $ fromIntegral $ toInteger $ round $ fromRight $ eval (Empty) e
+            labelSetText l $ show $ fromIntegral $ toInteger $ round $ fromRight $ eval Empty e
           _ -> labelSetText l ""
 
 
