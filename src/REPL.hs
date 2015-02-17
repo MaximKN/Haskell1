@@ -106,11 +106,11 @@ process st (Simplify e) = do case simplify e of
 process st (Print s) = do case eval (vars st) s of
                               Left msg -> putStrLn msg
                               Right val -> echo val
-                          repl st
+                          repl $ addHistory st (Print s)
 
 -- | Evaluate an expression n times
 process st (Loop n e)
-     = repl $ addCommands st (replicate n e)
+     = repl $ addCommands (addHistory st (Loop n e)) (replicate n e)
 
 -- | Define and store a function
 process st (FunctionInit n e)

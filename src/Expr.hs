@@ -36,12 +36,16 @@ eval :: Tree (Name, Lit)         -- ^ Variable name to value mapping
         -> Either Msg Lit        -- ^ Error message or numeric result 
 
 -- Basic arithmetic operations for eval
-eval vars (Val x)   = Right x	
+eval _ (Val x)   = Right x	
 eval vars (Add x y) = val add vars x y
 eval vars (Sub x y) = val sub vars x y
 eval vars (Mul x y) = val mul vars x y
-eval vars (Div x y) = val div' vars x y
-						
+eval vars (Div x y) = do z <- eval vars y
+                         case z of 
+                          FLit a -> f a
+                          ILit a -> f a
+                        where f a = if (a == 0) then Left "Divide by 0" else val div' vars x y       
+
 -- More complex operations for eval
 eval vars (Abs x)   = do x <- eval vars x
                          return $ abs' x

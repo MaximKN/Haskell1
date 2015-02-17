@@ -1,0 +1,361 @@
+%-----------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%-----------------------------------------------------------------------------
+
+\documentclass[a4paper, 11pt]{article} % Font size (can be 10pt, 11pt or 12pt) and paper size (remove a4paper for US letter paper)
+\usepackage[margin=1in]{geometry}
+\usepackage[protrusion=true,expansion=true]{microtype} % Better typography
+\usepackage{graphicx} % Required for including pictures
+\usepackage{wrapfig} % Allows in-line images
+\usepackage{amsmath}
+\usepackage{mathpazo} % Use the Palatino font
+\usepackage[T1]{fontenc} % Required for accented characters
+\linespread{1.05} % Change line spacing here, Palatino benefits from a slight increase by default
+
+\makeatletter
+\renewcommand\@biblabel[1]{\textbf{#1.}} % Change the square brackets for each bibliography item from '[1]' to '1.'
+\renewcommand{\@listI}{\itemsep=0pt} % Reduce the space between items in the itemize and enumerate environments and the bibliography
+
+\newcommand{\tab}[1]{\hspace{.2\textwidth}\rlap{#1}}
+\renewcommand{\maketitle}{ % Customize the title - do not edit title and author name here, see the TITLE block below
+\begin{flushright} % Right align
+{\LARGE\@title} % Increase the font size of the title
+
+\vspace{50pt} % Some vertical space between the title and author name
+
+{\large\@author} % Author name
+\\\@date % Date
+
+\vspace{40pt} % Some vertical space between the author block and abstract
+\end{flushright}
+}
+
+%-----------------------------------------------------------------------------
+%	TITLE
+%-----------------------------------------------------------------------------
+
+\title{\textbf{Calculator\\Haskell project 1}\\ % Title
+} % Subtitle
+
+\author{\textsc{130016030, 130009542, 130013767} % Author
+\\{\textit{University of St Andrews}}} % Institution
+
+\date{\today} % Date
+
+%-----------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle 
+%------------------------------------------------------------------------
+
+\section*{Introduction}
+The aim of this project is to develop a calculator program, which allows the user to enter arithmetic operations interactively using the keyboard, and immediately display the value of such expressions on the screen. The application should also provide support for variable assignment, error handling and command history. To combine the notion of modeling interactive programs as pure functions with the required side effects, we will use Haskell approach of using a new type along with primitives.
+
+\section*{Running instructions}
+First of all, you need to initialize sandbox by typing in a command prompt:\\
+
+\textit{cabal sandbox init}\\\\
+Then, configure this project:\\
+
+\textit{cabal configure}\\\\
+After that, you need do build it:\\
+
+\textit{cabal build}\\\\
+This will generate an executable file that can be accessed in:\\
+
+\textit{./dist/build/Haskell1/Haskell1}\\\\
+The GUI is not included in the configuration file. However, it can be run by GHCI\\
+
+\textit{ghci GUI.hs}\\\\
+This project uses GUI library called Gtk2Hs.\\
+It should be in the sandbox, BUT if you have any problems with it, you can download it from:\\
+\textit{http://projects.haskell.org/gtk2hs/}
+
+
+\section*{Design and implementation}
+
+\section{GUI.hs}
+
+The graphical user interface contains main function as well as event handlers. It deals only with basic arithmetic operations. It is using a table layout, so each button knows in what cell it should be. The result of typing and evaluation is displayed in a label. There are 3 event handlers. First one updates the label when user presses number or arithmetic operator. Second clears the label and last displays result of evaluation. 
+\\\\
+This self-driven extension that was done instead of using haskeline. It could be nice for us to attempt it, but we hope it still meets one of the requirements to "Look at the Haskell libraries and consider how to improve the input".
+\\\\
+One difficulty that was is using the latest Gtk2Hs library. For some reasons, all strings has to be casted by using ":: String". This minor thing took a lot of time to fix it. According to GitHub, library developers already know this bug and hopefully they will fix it in next version. 
+
+\section{Helper.hs}
+
+Helper module contains functions that are already not in use. For example, updateListVars or dropVar. Since we replaced lists by binary search tree we do not use them anymore and instead of deleting them, we decided to put it into another file. This module also contains definition of BST and supporting functions for reading file.
+
+\section{Expr.hs}
+
+This module uses Parsing to recognize commands, expressions and functions. Those functions were extended so it can parse commands and functions. On top of that, it contains evaluation function. 
+\\\\
+First of all, it tries to parse input and return a result as a command or expression. If it did not match, then it would print an error. After that, if it is an expression, it tries to evaluate it by using pattern matching. Evaluation function uses val function that applies a given operator to the left and right expression. One it is evaluated, it would return a result in Either type. 
+
+\section{Main.hs}
+
+Main contains only one function called main that runs a loop. This is default main configuration in cabal. It was already defined, but we turn standard output buffering off so that the prompt flushes before getting input. 
+
+\section{Parsing.hs}
+
+Parsing module was already written by Graham Hutton, Cambridge University Press, 2007. Some changes were added, namely: implementation of type anything, parsing input for a floating point number.
+
+\section{REPL.hs}
+(Read Evaluate Print Loop): repl, the main loop for the program.
+\\\\
+We use a binary search tree for vars and functions as it reduces the time complexity to access the values in said data structures. Linear $O(n)$, where as binary search tree would be $O(log n)$.
+function repl:
+\\\\
+The repl function is defined as taking in a variable st which maintains the state of the program; variables, list of commands to execute, function definitions, etc. In short, repl handles the retrieval of input, processing it and printing an appropriate output to the user. Any variables or functions created during an iteration of the REPL loop get added to the state so that they will be available for the next iteration.
+\\\\
+First, the repl function, displays a prompt the user which consists of the number of calculations that they have performed, and an arrow to denote the start of input. Next, a line is read in by calling the function readLine. readLine can either be from the standard input (console) or from a list of commands in the state if said list is not empty. The list of commands to get executed is used by operations like loading a file or calling a function so that their commands get dumped into a list of commands which will get executed before in input is read from the console. We remove a command from said list on every iteration of the repl loop; if applicable. 
+\\\\
+Once we have a string of input, we need to parse it. This is achieved by calling a function parse which is defined in the given parsing library Parsing.hs (by Graham Hutton, Functional parsing library from chapter 8 of Programming in Haskell). parse takes in a type to parse the input for. First we try to parse for commands by passing in the function pCommand defined in Expr.hs. Whats returned depends on the input. If the input is not a command then the input is tried for expressions and derivatives there of. We then process the returned parsed command or expression. If we get nothing returned, then we simply display a message that the input could not be parsed.
+\\\\
+Once the input as been parsed, it calls - from Expr.hs - the appropriate process function to handle it in REPL.hs. The general form of the process function is to apply the actual operation on the data (like calling eval to evaluate the data in Expr.hs), or printing to the screen, etc. It may or may not update the state, in which afterwards, it calls repl to continue the loop with the current state.
+
+\section{Lit.hs}
+
+We define our own data type Lit which can be either a float, integer or string. In this file, we also define our own functions to handle the result of applying an operator to different operands. In doing so, we allow behaviour such as numbers being concatenated to strings and integer conversions to floats from our overloaded "operators". This allows the language to be easily extended to handle new types and operations.
+
+\newpage
+\section*{Testing}
+
+\noindent\rule{16cm}{0.4pt}
+
+\begin{minipage}{0.1\textwidth}
+\includegraphics[width=3cm]{specexample}
+\end{minipage} \hfill
+\begin{minipage}{0.6\textwidth}
+Similarly to the example provided in the specification, the basic requirements work exactly as expected. This example demonstrates the quit command, basic arithmetic operations, variable assignment, command history, the implicit variable and also the parser improvements.
+\end{minipage}
+
+\noindent\rule{16cm}{0.4pt}
+
+\begin{minipage}{0.1\textwidth}
+\includegraphics[width=3.5cm]{floatandint}
+\end{minipage} \hfill
+\begin{minipage}{0.6\textwidth}
+After implementing floating point numbers, all arithmetic functions work as expected with both floating point numbers and integers.
+\end{minipage}
+
+\noindent\rule{16cm}{0.4pt}
+
+\includegraphics[width=14.5cm]{history}
+\\\\
+As opposed to throwing an exception and exiting the application, informative error messages are provided when the user tries to access an invalid history index and the program continues running as normal.
+
+\noindent\rule{16cm}{0.4pt}
+
+\begin{minipage}{0.1\textwidth}
+\includegraphics[width=5.5cm]{it}
+\end{minipage} \hfill
+\begin{minipage}{0.6\textwidth}
+The implicit variable 'it' also does not break the program if used incorrectly. We also demonstrate normal, expected behavior when used in arithmetic operations.
+\end{minipage}
+
+\noindent\rule{16cm}{0.4pt}
+
+\begin{minipage}{0.1\textwidth}
+\includegraphics[width=5.5cm]{variables}
+\end{minipage} \hfill
+\begin{minipage}{0.6\textwidth}
+For variables which haven't been defined, it is set as 'Nothing' as opposed to zero meaning we can return an error message if a user tries to use it.
+\end{minipage}
+
+\noindent\rule{16cm}{0.4pt}
+
+\begin{minipage}{0.1\textwidth}
+\includegraphics[width=6cm]{complex}
+\end{minipage} \hfill
+\begin{minipage}{0.6\textwidth}
+Here we demonstrate our implementation of the extra functions, mod, power and abs, which all work well with each other.
+\end{minipage}
+
+\noindent\rule{16cm}{0.4pt}
+
+\begin{minipage}{0.1\textwidth}
+\includegraphics[width=4.5cm]{modfloats}
+\end{minipage} \hfill
+\begin{minipage}{0.6\textwidth}
+The only case in which one of the extra functions does not work is mod with any floating point numbers, which is perfectly reasonable behaviour to expect as it is not possible to find the modulus when floating point numbers are involved.
+\end{minipage}
+
+\noindent\rule{16cm}{0.4pt}
+
+\begin{minipage}{0.1\textwidth}
+\includegraphics[width=5.5cm]{printing}
+\end{minipage} \hfill
+\begin{minipage}{0.6\textwidth}
+As you can see, the print command works for all types of characters as input, without the use of anything other than the command 'print'.
+\end{minipage}
+
+\noindent\rule{16cm}{0.4pt}
+
+\begin{minipage}{0.1\textwidth}
+\includegraphics[width=4cm]{basicloop}
+\end{minipage} \hfill
+\begin{minipage}{0.6\textwidth}
+When using the loop command for basic arithmetic operations, it works as expected.
+\end{minipage}
+
+\noindent\rule{16cm}{0.4pt}
+
+\begin{minipage}{0.1\textwidth}
+\includegraphics[width=4.5cm]{loopwithvariable}
+\end{minipage} \hfill
+\begin{minipage}{0.6\textwidth}
+If the user tries to use loop in a more complex way, such as to update a variable already declared and defined, the variable is updates n times. In this example, 1 is added to x 5 times, as opposed to 1 being added to the original x=1 each time it is executed.
+\end{minipage}
+
+\noindent\rule{16cm}{0.4pt}
+
+\begin{minipage}{0.1\textwidth}
+\includegraphics[width=6cm]{loopprint}
+\end{minipage} \hfill
+\begin{minipage}{0.6\textwidth}
+Looping and printing also work as expected when used together.
+\end{minipage}
+
+\noindent\rule{16cm}{0.4pt}
+
+\begin{minipage}{0.1\textwidth}
+\includegraphics[width=7cm]{breakingfunction}
+\end{minipage} \hfill
+\begin{minipage}{0.5\textwidth}
+When an invalid operation is used as the definition of a function, there is no problem as the function is simply being stored at this point. Then when the function is called, the appropriate error is displayed.
+\\
+However, if the user tries to define an empty function, this is not permitted by the parser.
+\end{minipage}
+
+\noindent\rule{16cm}{0.4pt}
+
+\begin{minipage}{0.1\textwidth}
+\includegraphics[width=8.5cm]{functionwithvariables}
+\end{minipage} \hfill
+\begin{minipage}{0.5\textwidth}
+Similarly to the test above, if the user tries to use variables which haven't been declared, this will give an error when the function is called. This allows the user to easily call the function after declaring the correct variables without having to redefine the function itself.
+\end{minipage}
+
+\noindent\rule{16cm}{0.4pt}
+
+\begin{minipage}{0.1\textwidth}
+\includegraphics[width=5cm]{concatenation}
+\end{minipage} \hfill
+\begin{minipage}{0.5\textwidth}
+After introducing a 'literal' type into the program to handle both floating point numbers and integers, we are also able to handle string operations such as concatenation which behaves as expected with strings and integers.
+\end{minipage}
+
+\noindent\rule{16cm}{0.4pt}
+
+\begin{minipage}{0.1\textwidth}
+\includegraphics[width=7.5cm]{errors}
+\end{minipage} \hfill
+\begin{minipage}{0.5\textwidth}
+If any expression is not completed by the user, it is handled by returning an error message.
+\end{minipage}
+
+\newpage
+\noindent\rule{16cm}{0.4pt}
+\\\\
+The implemented GUI works as expected with simple arithmetic operations using only integers as seen below:
+\\\\
+\begin{figure}[!htb]
+\minipage{0.32\textwidth}
+  \includegraphics[width=\linewidth]{calcadd}
+  \caption{Addition}\label{}
+\endminipage\hfill
+\minipage{0.32\textwidth}
+  \includegraphics[width=\linewidth]{calcsub}
+  \caption{Subtraction}\label{}
+\endminipage\hfill
+\minipage{0.32\textwidth}%
+  \includegraphics[width=\linewidth]{calcdiv}
+  \caption{Division}\label{}
+\endminipage
+\end{figure}
+
+\begin{figure}[!htb]
+\minipage{0.47\textwidth}
+  \includegraphics[width=\linewidth]{calcmul}
+  \caption{Multiplication}\label{}
+\endminipage\hfill
+\minipage{0.47\textwidth}
+  \includegraphics[width=\linewidth]{complexcalc}
+  \caption{Complex example}\label{}
+\endminipage
+\end{figure}
+
+
+\clearpage
+\section*{Individual reports}
+\section*{130016030}
+We divided this project equally. My contribution for this project was a managing others, setting tasks and managing our time. Although, I was a team leader, we also spend a lot of time doing pair programming. On top of that, I implemented a binary search tree, functions, print command, loops and some basic requirements. But, nonetheless, the majority of my work was done in pair. 
+\\\\
+Another major part that I want to raise was to write a graphical user interface. As it was already mentioned above, I had a problem with the library. Although, the direct casting to string is not the most elegant way of writing code, but it is still only one solution that works with Gtk2Hs.
+\\\\
+I did not have any difficulties with writing a code or managing other. Sometimes it comes to be misunderstanding of the language. There is a big difference between functional and imperative programming.
+\\\\
+Nevertheless, time management was excellent. By doing all work step by step helped us to finished this project on time. As a result, we had a chance to do hard and really hard extension. Only one thing that we have not done is to write a simplify command. I believe this could improve our project.  
+\section*{130009542}
+
+I implemented the parser improvements (whitespace and allowing multiple digit numbers) after reading parts of Hutton's "Programming in Haskell" to understand how the parsing library and parser work. This was simply done by replacing the parsing rules being used.
+\\\\
+I then attempted the first few extensions. Supporting negative integers was straightforward as it was a similar problem to the parser improvements I made.
+\\\\
+Following the example of student 130013767 from when they implemented the basic arithmetic functions, I added the extra functions; mod, power and abs. This involved amending the Expr constructor, creating evaluation functions for the expressions and including them in the parser. I had some trouble with this, also because of a lot of whitespace issues but student 130016030 showed me how to fix this and they also helped me with where each function fit into the parser.
+\\\\
+I also implemented support for floating point numbers by writing a new parsing rule in the library called 'FloatInt' which parses an int, followed by a decimal point, followed by a natural number. Two do statements were used to allow either an integer or floating point.
+\\\\
+My last task was testing; I checked for any cases where the calculator didn't work so that the team could fix these bugs.
+
+\section*{130013767}
+I started off implementing the basic arithmetic operations by extending the evaluation function in Expr.hs. I did so by creating a function val which takes in an operator (to apply to the operands), a list of variables (which might be used), and two expressions (the operands).
+\\\\
+After grasping an understanding of the parser and how it is evaluated, I modified the quit command (previously defined in REPL.hs) so that it is parsed and checked through the parser, which semantically makes more sense.
+Next I moved on to providing support for loading files, while at the same time providing better error checking as we added more complex operations. The use of Either helped in displaying runtime errors to the user.
+\\\\
+At this point, it became more efficient to use pair programming to tackle the harder extensions. We started work on simplify in Simplify.hs but never finished it due to not having enough time. I also defined another file, Lit.hs, to handle the new type Lit (stands for literal), which is used to make floating and integer handling easier but at the same allowing it to be extended for things like String. As a result, strings can be concatenated to the numbers (that have been converted into strings).
+\\\\
+For operations like loading a file, and functions, they needed to be executed before getting input from the user again so I created a system where commands stored in the state are executed if they exist and get removed afterwards.
+\\\\
+Finally, we gave print ability to print strings that are evaluated before they are printed, allowing for the dynamic printing of variable values.
+
+\section*{Conclusion}
+To conclude, through the development of this calculator application and the implementation of features with different difficulties, we are a lot more confident with the fundamental features and structure of Haskell applications. We have learnt how to program with recursive equations, algebraic data types, manipulating lists and working with functional parsers. Our program supports variable assignment and update, all arithmetic operations, clean error handling, as well as, all of the extension features except for the simplify command.
+
+
+\newpage
+\begin{thebibliography}{9}
+
+\bibitem{progHs} 
+Hutton, G. 
+\textit{Programming in Haskell}. 
+Cambridge, UK: Cambridge University Press, 2007
+ 
+\bibitem{craftHs} 
+Thompson, S. Haskell
+\textit{The Craft of Functional Programming}
+Essex, UK: Pearson Education Limited, 2011
+
+\bibitem{parallel} 
+Marlow, S.
+\textit{Parallel and Concurrent Programming in Haskell.}
+Sebastopol, CA: O'Reilly Media, Inc, 2013.
+
+\bibitem{learnHs} 
+Lipovaca, M.
+\textit{Learn You a Haskell for Great Good!}
+No Starch Press, 2011. Web. 10 Feb 2015. 
+
+\bibitem{rwHs} 
+O'Sullivan, B., Stewart, D. and Goerzen, J.
+\textit{Real World Haskell}
+Sebastopol, CA: O'Reilly Media, Inc, 2009. Web. 10 Feb 2015.
+ 
+\bibitem{knuthwebsite} 
+Shevchenko, D. Haskell humanly. The MIT License, 2015. Web. 10 Feb 2015. 
+\\\texttt{http://ohaskell.dshevchenko.biz/en/index.html}
+\end{thebibliography}
+\end{document}

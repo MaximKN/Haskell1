@@ -1,8 +1,5 @@
 module Helper where
 
-import System.IO
-import Lit
-
 type Name  = String  -- variable name
 type Msg   = String  -- message
 
