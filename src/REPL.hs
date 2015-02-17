@@ -16,7 +16,7 @@ data State = State { vars     :: Tree (Name, Lit),      -- Stores variables
 
 -- | Initialize state to default values
 initState :: State
-initState = State Empty Empty 0 [] []
+initState =  State Empty Empty 0 [] []
 
 -- | Add variable to tree of variables
 updateTreeVars :: (Ord a) => a -> b -> Tree (a, b) -> Tree (a, b)
@@ -60,8 +60,11 @@ readLine st | hasCommands st  = let cmd = head (commands st) in
                                        return   cmd
             | otherwise       = getLine
 
-
--------------------- Functions for process parsed input -------------------------
+-- | Print Lit values to the console
+echo :: Lit -> IO()
+echo x = case x of
+            ILit x -> print x
+            FLit x -> print x
 
 -- | Set a variable and update the state
 process :: State -> Command -> IO ()
@@ -77,9 +80,7 @@ process st (Set var e)
 process st (Eval e)
      = let ev  = eval (vars st) e
               in case ev of
-                Right x  -> do case x of
-                                   ILit x -> print x
-                                   FLit x -> print x
+                Right x  -> do echo x
                                repl $ addVar "it" x $ (addHistory st $ Eval e) {numCalcs = numCalcs st + 1}
                 Left err -> do putStrLn err
                                repl st
@@ -124,9 +125,6 @@ process st (History index)
               Left s -> putStrLn s
               Right command -> process st command -- Get the most recent command from history and execute it
          repl st
-         
----------------------------------------------------------------------------------
-
 
 -- | Read, Eval, Print Loop
 -- ^ This reads and parses the input using the pCommand parser, and calls
