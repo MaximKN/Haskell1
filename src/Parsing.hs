@@ -89,6 +89,9 @@ isAnything	c				  = True
 character                     :: Parser Char
 character                     = sat isAnything
 
+character'                    :: Parser Char
+character'                    = sat (/='"')
+
 char                          :: Char -> Parser Char
 char x                        =  sat (== x)
 
@@ -116,6 +119,12 @@ anything                      :: Parser String
 anything                      =  do x  <- character
                                     xs <- many character
                                     return (x:xs)
+
+-- | Accepts any characters (except double quotes) from the input stream
+anything'                     :: Parser String
+anything'                     =  do x  <- character'
+                                    xs <- many character'
+                                    return (x:xs)
 									
 nat                           :: Parser Int
 nat                           =  do xs <- many1 digit
@@ -138,7 +147,7 @@ floatInt                        = do i <- int
 -- | Parse input for strings
 str 							:: Parser Lit
 str                              = do char '\"'
-                                      s <- anything
+                                      s <- anything'
                                       char '\"'
                                       return (SLit s)
 									  
