@@ -1,13 +1,16 @@
 module Lit where
 
-data Lit = ILit Int | FLit Float
-    deriving (Show, Eq, Read, Ord)
+data Lit = ILit Int | FLit Float | SLit String
+    deriving (Show, Read)
 
 add :: Lit -> Lit -> Lit
 add (ILit a) (ILit b) = ILit (a + b)
 add (FLit a) (FLit b) = FLit (a + b)
 add (ILit a) (FLit b) = FLit ((fromIntegral a) + b)
 add (FLit a) (ILit b) = FLit (a + (fromIntegral b))
+
+add (SLit a) b = SLit (a ++ showLit b)
+add a (SLit b) = SLit (showLit a ++ b)
 
 sub :: Lit -> Lit -> Lit
 sub (ILit a) (ILit b) = ILit (a - b)
@@ -43,3 +46,15 @@ pow (FLit a) (ILit b) = FLit (a ** (fromIntegral b))
 
 mod' :: Lit -> Lit -> Lit
 mod' (ILit a) (ILit b) = ILit (a `mod` b)
+
+-- | Print Lit values to the console
+echo :: Lit -> IO ()
+echo x = case x of
+            ILit x -> print x
+            FLit x -> print x
+            SLit x -> putStrLn x
+
+showLit :: Lit -> String
+showLit (ILit a) = show a
+showLit (FLit a) = show a
+showLit (SLit a) = a

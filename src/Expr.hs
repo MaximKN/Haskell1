@@ -2,9 +2,7 @@ module Expr where
 
 import Parsing
 import Helper
-import Lit 
-
-type Msg = String
+import Lit
 
 -- | These are Expressions used in Command
 data Expr = Add Expr Expr   -- ^ Addition
@@ -21,8 +19,8 @@ data Expr = Add Expr Expr   -- ^ Addition
 -- | These are the REPL commands
 data Command = Set Name Expr                -- ^ Setting expression to the variable
              | Eval Expr                    -- ^ Expression evaluation
-             | Print String                 -- ^ Printing the expression
-             | Loop Int String              -- ^ Looping, the number of times and expression as a string
+             | Print Expr                   -- ^ Printing the expression
+             | Loop Int Lit                 -- ^ Looping, the number of times and expression as a string
              | FunctionInit Name String     -- ^ Initialize the function, function name, expression as a string 
              | FunctionCall Name            -- ^ Calling function
              | Simplify Expr                -- ^ Simplify an expression
@@ -86,21 +84,20 @@ pCommand = do symbol ":"
                            return (Simplify e)
                          ||| do char 'h'
                                 return (Help)
-                             
             ||| do char '!'
                    index <- int
                    return (History index)
-                 ||| do l <- letter -- Variable assignment
+                 ||| do l <- identifier -- Variable assignment
                         symbol "="
                         e <- pExpr
-                        return (Set [l] e)
+                        return (Set l e)
                       ||| do string "print" -- Print statement
                              space
-                             s <- anything
+                             s <- pExpr
                              return (Print s)
                            ||| do string "loop"  -- Loop construct
                                   n <- natural
-                                  e <- anything
+                                  e <- str
                                   return (Loop n e)
                                 ||| do string "function" -- Function declaration
                                        n <- identifier -- Function identifier 
@@ -126,7 +123,7 @@ pExpr = do t <- pTerm
 
 -- | Parse factors
 pFactor :: Parser Expr
-pFactor = do d <- floatInt     -- Literal
+pFactor = do d <- floatIntStr   -- Literal
              return (Val d)
           ||| do v <- identifier    -- Variable
                  return (Ident v)

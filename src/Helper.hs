@@ -2,9 +2,10 @@ module Helper where
 
 import System.IO
 
+type Name  = String  -- variable name
+type Msg   = String  -- message
+
 ----------------------- BINARY TREES ------------------------
--- | Alias for variable name
-type Name = String
 
 -- | Binary search tree
 data Tree a = Empty
@@ -17,7 +18,6 @@ getValueFromTree _ Empty = Nothing
 getValueFromTree n (Node (z,q) t1 t2) | n < z = getValueFromTree n t1
                                       | n > z = getValueFromTree n t2
                                       | otherwise = Just q
-
 ------------------- END OF BINARY TREES -----------------------
 
 -- | Similar to function word, except it takes a predicate
@@ -27,10 +27,3 @@ wordsWhen p s =  case dropWhile p s of
                       "" -> []
                       s' -> w : wordsWhen p s''
                             where (w, s'') = break p s'
-                            
--- | The 'fromRight' function extracts the element out of a 'Right' and
--- | throws an error if its argument take the form  @Left _@.
--- | Src: https://hackage.haskell.org/package/either-unwrap-1.1/docs/src/Data-Either-Unwrap.html#isRight
-fromRight           :: Either a b -> b
-fromRight (Left _)  = error "Either.Unwrap.fromRight: Argument takes form 'Left _'" -- yuck
-fromRight (Right x) = x

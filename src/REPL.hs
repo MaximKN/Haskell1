@@ -61,12 +61,6 @@ readLine st | hasCommands st  = let cmd = head (commands st) in
                                        return   cmd
             | otherwise       = getLine
 
--- | Print Lit values to the console
-echo :: Lit -> IO ()
-echo x = case x of
-            ILit x -> print x
-            FLit x -> print x
-
 -- | Set a variable and update the state
 process :: State -> Command -> IO ()
 process st (Set var e) 
@@ -109,12 +103,15 @@ process st (Simplify e) = do case simplify e of
                              repl st
                                             
 -- | Take a string and print it to the console
-process st (Print s) = do putStrLn s
+process st (Print s) = do case eval (vars st) s of
+                              Left msg -> putStrLn msg
+                              Right val -> echo val
                           repl st
 
 -- | Evaluate an expression n times
 process st (Loop n e)
-     = repl $ addCommands st (replicate n e)
+     = case e of
+		SLit s -> repl $ addCommands st (replicate n (show s))
 
 -- | Define and store a function
 process st (FunctionInit n e)
@@ -142,6 +139,6 @@ repl st = do putStr (show (numCalcs st) ++ " > ")
              let st' = removeCommand st in -- remove command from list if file was used
                case parse pCommand inp of
                   [(cmd, "")] -> process st' cmd -- Must parse entire input
-                  _ -> do putStrLn $ "Error: could not parse \"" ++ inp ++ "\"."
+                  _ -> do putStrLn $ "Error: could not parse: " ++ inp
                           repl st'
                           
