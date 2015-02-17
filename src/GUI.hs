@@ -2,10 +2,10 @@ module GUI where
 
 import Graphics.UI.Gtk
 import Expr
-import Helper
+import Lit
 import Parsing
 
-main :: IO ()
+main :: IO ()      
 main = do
   initGUI
   window  <- windowNew
@@ -111,8 +111,7 @@ equalsHandler l =
      case parse pCommand txt of
        [(cmd, "")] -> 
         case cmd of 
-          Eval e ->
-			labelSetText l $ show $ fromIntegral $ toInteger $ round $ fromRight $ eval Empty e
+          Eval e -> labelSetText l ((txt::String) ++ " = " ++ (showLit $ fromRight $ eval Empty e))
           _ -> labelSetText l ""
 
 

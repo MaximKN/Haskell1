@@ -1,12 +1,12 @@
 module Helper where
 
 import System.IO
+import Lit
 
 type Name  = String  -- variable name
 type Msg   = String  -- message
 
 ----------------------- BINARY TREES ------------------------
-
 -- | Binary search tree
 data Tree a = Empty
             | Node a (Tree a) (Tree a)
@@ -19,7 +19,6 @@ getValueFromTree n (Node (z,q) t1 t2) | n < z = getValueFromTree n t1
                                       | n > z = getValueFromTree n t2
                                       | otherwise = Just q
 ------------------- END OF BINARY TREES -----------------------
-
 -- | Similar to function word, except it takes a predicate
 -- | Src: http://stackoverflow.com/a/4981265/2849447
 wordsWhen     :: (Char -> Bool) -> String -> [String]
