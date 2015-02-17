@@ -1,7 +1,7 @@
 module Helper where
 
 import System.IO
-
+import Lit
 ----------------------- BINARY TREES ------------------------
 -- | Alias for variable name
 type Name = String
@@ -19,6 +19,18 @@ getValueFromTree n (Node (z,q) t1 t2) | n < z = getValueFromTree n t1
                                       | otherwise = Just q
 
 ------------------- END OF BINARY TREES -----------------------
+
+-- | Print Lit values to the console
+echo :: Lit -> IO ()
+echo x = case x of
+            ILit x -> print x
+            FLit x -> print x
+
+-- | Print Lit values to the console
+echoString :: Lit -> String
+echoString x = case x of
+            ILit x -> show x
+            FLit x -> show x
 
 -- | Similar to function word, except it takes a predicate
 -- | Src: http://stackoverflow.com/a/4981265/2849447

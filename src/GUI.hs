@@ -111,8 +111,7 @@ equalsHandler l =
      case parse pCommand txt of
        [(cmd, "")] -> 
         case cmd of 
-          Eval e ->
-			labelSetText l $ show $ fromIntegral $ toInteger $ round $ fromRight $ eval Empty e
+          Eval e -> labelSetText l ((txt::String) ++ " = " ++ (echoString $ fromRight $ eval Empty e))
           _ -> labelSetText l ""
 
 

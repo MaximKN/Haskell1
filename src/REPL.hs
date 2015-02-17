@@ -61,12 +61,6 @@ readLine st | hasCommands st  = let cmd = head (commands st) in
                                        return   cmd
             | otherwise       = getLine
 
--- | Print Lit values to the console
-echo :: Lit -> IO ()
-echo x = case x of
-            ILit x -> print x
-            FLit x -> print x
-
 -- | Set a variable and update the state
 process :: State -> Command -> IO ()
 process st (Set var e) 
