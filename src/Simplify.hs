@@ -1,6 +1,6 @@
 module Simplify where
 import Expr
-import Helper
+import Lit
 
 simplify :: Expr -> Either String Lit
 simplify = simp

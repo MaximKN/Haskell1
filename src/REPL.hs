@@ -3,6 +3,7 @@ module REPL where
 import Expr
 import Parsing
 import Helper
+import Lit
 import Simplify
 import Data.Maybe
 import Control.Exception
@@ -61,7 +62,7 @@ readLine st | hasCommands st  = let cmd = head (commands st) in
             | otherwise       = getLine
 
 -- | Print Lit values to the console
-echo :: Lit -> IO()
+echo :: Lit -> IO ()
 echo x = case x of
             ILit x -> print x
             FLit x -> print x
@@ -96,6 +97,11 @@ process st (Load filename) = do contents <- try $ readFile filename :: IO (Eithe
 -- | Quit application
 process _ (Quit) = putStrLn "Bye!"
 
+-- | Display help document
+process _ (Help) = putStrLn $ "List of commands: q(uit), l(oad), p(print)\n" ++
+                                "Load and print take in a string representing the filename" ++
+                                    "and string to print respectively."
+
 -- | Take an expression and simplify it
 process st (Simplify e) = do case simplify e of 
                                Left err -> print err
@@ -122,9 +128,9 @@ process st (FunctionCall f)
 -- | Index into command history and execute select command
 process st (History index)
     = do case getHistory st index of 
-              Left s -> putStrLn s
-              Right command -> process st command -- Get the most recent command from history and execute it
-         repl st
+              Left s    -> do putStrLn s
+                              repl st  
+              Right cmd -> process st cmd -- Get the most recent command from history and execute it
 
 -- | Read, Eval, Print Loop
 -- ^ This reads and parses the input using the pCommand parser, and calls

@@ -1,27 +1,7 @@
 module Helper where
 
 import System.IO
-import Data.Fixed
- 
-data Lit = ILit Int | FLit Float
-    deriving (Show, Eq, Read, Ord)
 
-instance Num Lit where
-  (+) (ILit x) (ILit y) = ILit (x + y)
-  (+) (FLit x) (FLit y) = FLit (x + y)
-  (*) (ILit x) (ILit y) = ILit (x * y)
-  (*) (FLit x) (FLit y) = FLit (x * y)
-  
-instance Fractional Lit where
-  (/)  (FLit x) (FLit y)  = FLit (x / y)
-  (/)  (ILit x) (ILit y)  = ILit (x `div` y)
-
---instance Integral Lit where
- -- (mod) (ILit x) (ILit y) = ILit (x `mod` y)
-  
-instance Floating Lit where
-  (**) (FLit x) (FLit y) = FLit (x ** y)
-  
 ----------------------- BINARY TREES ------------------------
 -- | Alias for variable name
 type Name = String

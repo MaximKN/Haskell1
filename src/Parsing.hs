@@ -9,7 +9,7 @@ module Parsing where
 
 import Data.Char
 import Control.Monad
-import Helper
+import Lit
 
 infixr 5 |||
 
@@ -132,8 +132,7 @@ floatInt                        :: Parser Lit
 floatInt                        = do i <- int
                                      do char '.'
                                         f <- nat
-                                        return (FLit (read(show i ++ "."
-                                                  ++ show f)))
+                                        return (FLit (read(show i ++ "." ++ show f)))
                                       ||| return (ILit i)
                    
 space                         :: Parser ()

@@ -2,6 +2,7 @@ module Expr where
 
 import Parsing
 import Helper
+import Lit 
 
 type Msg = String
 
@@ -27,6 +28,7 @@ data Command = Set Name Expr                -- ^ Setting expression to the varia
              | Simplify Expr                -- ^ Simplify an expression
              | Load Name                    -- ^ Load a file and execute its commands
              | History Int                  -- ^ Index into history and execute selected command
+             | Help                         -- ^ Display how to use certain commands
              | Quit                         -- ^ Quit the application
   deriving Show
 
@@ -34,30 +36,31 @@ data Command = Set Name Expr                -- ^ Setting expression to the varia
 eval :: Tree (Name, Lit)         -- ^ Variable name to value mapping
         -> Expr                  -- ^ Expression to evaluate
         -> Either Msg Lit        -- ^ Error message or numeric result 
-        
-eval _    (Val x)     = Right x
-eval vars (Add x y)   = val (+) vars x y
-eval vars (Sub x y)   = val (-) vars x y
-eval vars (Mul x y)   = val (*) vars x y
-eval vars (Div x y)   = val (/) vars x y
-eval vars (Abs x)     = do x <- eval vars x
-                           return $ abs x
 
+-- Basic arithmetic operations for eval
+eval vars (Val x)   = Right x	
+eval vars (Add x y) = val add vars x y
+eval vars (Sub x y) = val sub vars x y
+eval vars (Mul x y) = val mul vars x y
+eval vars (Div x y) = val div' vars x y
+
+-- More complex operations for eval
+eval vars (Abs x)   = do x <- eval vars x
+                         return $ abs' x
+						 
 eval vars (Power x y) = do x <- eval vars x
                            y <- eval vars y
-                           return (x ** y)
-                           
+                           return (pow x y)
+
 eval vars (Ident x)   = case getValueFromTree x vars of
                             Just a  -> Right a
                             Nothing -> Left "Use of undeclared variable"
 
-{-
 eval vars (Mod x y) = do x <- eval vars x
                          y <- eval vars y
-                         return (x `mod` y)
--}
+                         return (mod' x y)
 
--- | Apply an operator to the evalution of the left and right expressions       
+-- | Apply an operator to the evaluation of the left and right expressions       
 val :: (Lit -> Lit -> Lit)           -- ^ Operator function
               -> Tree (Name, Lit)    -- ^ Tree of variables
               -> Expr                -- ^ Left expression
@@ -81,6 +84,9 @@ pCommand = do symbol ":"
                            space
                            e <- pExpr
                            return (Simplify e)
+                         ||| do char 'h'
+                                return (Help)
+                             
             ||| do char '!'
                    index <- int
                    return (History index)
