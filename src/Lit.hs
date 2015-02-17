@@ -8,7 +8,6 @@ add (ILit a) (ILit b) = ILit (a + b)
 add (FLit a) (FLit b) = FLit (a + b)
 add (ILit a) (FLit b) = FLit ((fromIntegral a) + b)
 add (FLit a) (ILit b) = FLit (a + (fromIntegral b))
-
 add (SLit a) b = SLit (a ++ showLit b)
 add a (SLit b) = SLit (showLit a ++ b)
 

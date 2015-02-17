@@ -20,7 +20,7 @@ data Expr = Add Expr Expr   -- ^ Addition
 data Command = Set Name Expr                -- ^ Setting expression to the variable
              | Eval Expr                    -- ^ Expression evaluation
              | Print Expr                   -- ^ Printing the expression
-             | Loop Int Lit                 -- ^ Looping, the number of times and expression as a string
+             | Loop Int String              -- ^ Looping, the number of times and expression as a string
              | FunctionInit Name String     -- ^ Initialize the function, function name, expression as a string 
              | FunctionCall Name            -- ^ Calling function
              | Simplify Expr                -- ^ Simplify an expression
@@ -41,7 +41,7 @@ eval vars (Add x y) = val add vars x y
 eval vars (Sub x y) = val sub vars x y
 eval vars (Mul x y) = val mul vars x y
 eval vars (Div x y) = val div' vars x y
-
+						
 -- More complex operations for eval
 eval vars (Abs x)   = do x <- eval vars x
                          return $ abs' x
@@ -97,8 +97,8 @@ pCommand = do symbol ":"
                              return (Print s)
                            ||| do string "loop"  -- Loop construct
                                   n <- natural
-                                  e <- str
-                                  return (Loop n e)
+                                  s <- anything
+                                  return (Loop n s)
                                 ||| do string "function" -- Function declaration
                                        n <- identifier -- Function identifier 
                                        symbol "():"

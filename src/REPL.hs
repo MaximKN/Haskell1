@@ -110,8 +110,7 @@ process st (Print s) = do case eval (vars st) s of
 
 -- | Evaluate an expression n times
 process st (Loop n e)
-     = case e of
-		SLit s -> repl $ addCommands st (replicate n (show s))
+     = repl $ addCommands st (replicate n e)
 
 -- | Define and store a function
 process st (FunctionInit n e)
