@@ -4,6 +4,9 @@ import Graphics.UI.Gtk
 import Expr
 import Lit
 import Parsing
+import Data.Either
+import Helper
+
 
 main :: IO ()      
 main = do
@@ -102,6 +105,12 @@ switchOpNum b l = do label <- get b buttonLabel
 -- Clears the given label
 clearLabel :: Label -> IO ()
 clearLabel l = labelSetText l ""
+
+-- | The 'fromRight' function extracts the element out of a 'Right' and
+-- throws an error if its argument take the form  @Left _@.
+fromRight           :: Either a b -> b
+fromRight (Left _)  = error "Either.Unwrap.fromRight: Argument takes form 'Left _'" -- yuck
+fromRight (Right x) = x
 
 -- Evaluates the expression, converts it to the int, and puts it on the label
 equalsHandler :: Label -> IO ()
